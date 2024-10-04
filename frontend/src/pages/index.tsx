@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi';
 import ContentLock from '@/layout/lock';
 //Importing Components
 import Meta from '@/components/Meta';
+import Dashboard from '@/sections/Dashboard';
 
 export default function Home() {
   const { isConnecting, isConnected, isDisconnected } = useAccount();
@@ -16,7 +17,9 @@ export default function Home() {
   return (
     <Fragment>
       <Meta />
-      <div className="w-full flex flex-col"></div>
+      <div className="flex flex-col w-full h-full">
+      <Dashboard />
+      </div>
     </Fragment>
   );
 }
