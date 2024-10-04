@@ -96,7 +96,7 @@ const wallets = [
 
 export const wagmiConfig = getDefaultConfig({
   appName: 'Zero Key',
-  projectId: projectId,
+  projectId: 'fe5fda9122acca6c030535059b4181fb',
   wallets: wallets,
   chains: [base],
   transports: {
