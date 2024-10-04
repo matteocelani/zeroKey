@@ -40,15 +40,7 @@ import {
 } from '@rainbow-me/rainbowkit/wallets';
 // Wagmi
 import { http } from 'wagmi';
-import {
-  arbitrum,
-  base,
-  mainnet,
-  optimism,
-  polygon,
-  sepolia,
-  zora,
-} from 'wagmi/chains';
+import { base } from 'wagmi/chains';
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '';
 
@@ -106,22 +98,9 @@ export const wagmiConfig = getDefaultConfig({
   appName: 'Zero Key',
   projectId: 'fe5fda9122acca6c030535059b4181fb',
   wallets: wallets,
-  chains: [
-    mainnet,
-    polygon,
-    optimism,
-    arbitrum,
-    base,
-    zora,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia] : []),
-  ],
+  chains: [base],
   transports: {
-    [mainnet.id]: http(),
-    [polygon.id]: http(),
-    [optimism.id]: http(),
-    [arbitrum.id]: http(),
     [base.id]: http(),
-    [zora.id]: http(),
   },
   ssr: true,
 });

@@ -11,7 +11,7 @@ import ThemeSwitch from '@/components/ThemeSwitch';
 import { NavigationProps } from '@/lib/types/layout';
 
 export default function NavBar({ isOpen, toggleOpen }: NavigationProps) {
-  const { isConnecting, isConnected, isDisconnected } = useAccount();
+  const { isConnected } = useAccount();
 
   const [mounted, setMounted] = useState(false);
 
@@ -31,23 +31,19 @@ export default function NavBar({ isOpen, toggleOpen }: NavigationProps) {
         </Link>
 
         <div className="hidden md:flex items-center space-x-6">
-          {isConnecting ||
-            !isConnected ||
-            (isDisconnected && <ConnectButton />)}
+          {isConnected && <ConnectButton />}
           <ThemeSwitch />
         </div>
 
         <div className="flex items-center md:hidden">
-          {isConnecting ||
-            !isConnected ||
-            (isDisconnected && (
-              <div className="hidden md:flex items-center space-x-6">
-                <ConnectButton />
-              </div>
-            ))}
+          {isConnected && (
+            <div className="mr-4">
+              <ConnectButton />
+            </div>
+          )}
           <div
             onClick={toggleOpen}
-            className={`hamburger flex flex-col justify-between w-6 h-5 cursor-pointer ml-4 ${
+            className={`hamburger flex flex-col justify-between w-6 h-5 cursor-pointer ${
               isOpen ? 'open' : ''
             }`}
           >
