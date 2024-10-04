@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 //Importing Next
 import Link from 'next/link';
+//Importing Hooks
+import { useAccount } from 'wagmi';
 //Importing RainbowKit
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+//Importing Components
+import ThemeSwitch from '@/components/ThemeSwitch';
 // Import Types
 import { NavigationProps } from '@/lib/types/layout';
 
 export default function NavBar({ isOpen, toggleOpen }: NavigationProps) {
+  const { isConnecting, isConnected, isDisconnected } = useAccount();
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -25,11 +31,20 @@ export default function NavBar({ isOpen, toggleOpen }: NavigationProps) {
         </Link>
 
         <div className="hidden md:flex items-center space-x-6">
-          <ConnectButton />
+          {isConnecting ||
+            !isConnected ||
+            (isDisconnected && <ConnectButton />)}
+          <ThemeSwitch />
         </div>
 
         <div className="flex items-center md:hidden">
-          <ConnectButton />
+          {isConnecting ||
+            !isConnected ||
+            (isDisconnected && (
+              <div className="hidden md:flex items-center space-x-6">
+                <ConnectButton />
+              </div>
+            ))}
           <div
             onClick={toggleOpen}
             className={`hamburger flex flex-col justify-between w-6 h-5 cursor-pointer ml-4 ${
