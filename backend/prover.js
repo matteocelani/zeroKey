@@ -39,22 +39,61 @@ export class HashPreimageProver {
         }
         `;
 
+
+        console.log("1");
+        function serializeArtifacts(artifacts) {
+            return {
+                program: Buffer.from(artifacts.program).toString('base64'),
+                abi: artifacts.abi,
+                snarkjs: artifacts.snarkjs ? {
+                    program: Buffer.from(artifacts.snarkjs.program).toString('base64')
+                } : undefined,
+                constraintCount: artifacts.constraintCount
+            };
+        }
+
+        function deserializeArtifacts(serializedArtifacts) {
+            return {
+                program: new Uint8Array(Buffer.from(serializedArtifacts.program, 'base64')),
+                abi: serializedArtifacts.abi,
+                snarkjs: serializedArtifacts.snarkjs ? {
+                    program: new Uint8Array(Buffer.from(serializedArtifacts.snarkjs.program, 'base64'))
+                } : undefined,
+                constraintCount: serializedArtifacts.constraintCount
+            };
+        }
+
+// Saving the artifacts
         const artifacts = this.zokrates.compile(source);
         console.log("1");
-        const { witness, output } = this.zokrates.computeWitness(artifacts, inputs);
 
+        const serializedArtifacts = serializeArtifacts(artifacts);
+        fs.writeFileSync('artifacts.json', JSON.stringify(serializedArtifacts, null, 2));
+
+
+// Later, when you need to reuse the artifacts:
+        const loadedArtifactsJson = JSON.parse(fs.readFileSync('artifacts.json', 'utf8'));
+        const loadedArtifacts = deserializeArtifacts(loadedArtifactsJson);
+
+
+        const { witness, output } = this.zokrates.computeWitness(artifacts, inputs);
         console.log("2");
+        fs.writeFileSync('witness.txt', witness.toString());
+        fs.writeFileSync('output.txt', output.toString());
+
         const keypair = this.zokrates.setup(artifacts.program);
         console.log("3");
+        fs.writeFileSync('keypair.txt', keypair.toString());
+
         const proof = this.zokrates.generateProof(artifacts.program, witness, keypair.pk);
         console.log("4");
+        fs.writeFileSync('proof.json', JSON.stringify(proof, null, 2));
 
         const isVerified = this.zokrates.verify(keypair.vk, proof);
         console.log("5");
+        fs.writeFileSync('verification_result.txt', isVerified.toString());
 
         const verifier = this.zokrates.exportSolidityVerifier(keypair.vk);
-
-        // creating verifier.sol
         fs.writeFileSync('verifier.sol', verifier);
 
         return { proof, isVerified, verifier, addressHash: output };
