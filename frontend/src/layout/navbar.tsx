@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 //Importing Next
 import Link from 'next/link';
 //Importing Hooks
@@ -37,20 +37,22 @@ export default function NavBar({ isOpen, toggleOpen }: NavigationProps) {
 
         <div className="flex items-center md:hidden">
           {isConnected && (
-            <div className="mr-4">
-              <ConnectButton />
-            </div>
+            <>
+              <div className="mr-4">
+                <ConnectButton />
+              </div>
+              <div
+                onClick={toggleOpen}
+                className={`hamburger flex flex-col justify-between w-6 h-5 cursor-pointer ${
+                  isOpen ? 'open' : ''
+                }`}
+              >
+                <span className="line"></span>
+                <span className="line"></span>
+                <span className="line"></span>
+              </div>
+            </>
           )}
-          <div
-            onClick={toggleOpen}
-            className={`hamburger flex flex-col justify-between w-6 h-5 cursor-pointer ${
-              isOpen ? 'open' : ''
-            }`}
-          >
-            <span className="line"></span>
-            <span className="line"></span>
-            <span className="line"></span>
-          </div>
         </div>
       </nav>
     </header>
