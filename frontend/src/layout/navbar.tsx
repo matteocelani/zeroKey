@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAccount } from 'wagmi';
 //Importing RainbowKit
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+//Importing Components
+import ThemeSwitch from '@/components/ThemeSwitch';
 // Import Types
 import { NavigationProps } from '@/lib/types/layout';
 
@@ -28,13 +30,12 @@ export default function NavBar({ isOpen, toggleOpen }: NavigationProps) {
           Zero Key
         </Link>
 
-        {isConnecting ||
-          !isConnected ||
-          (isDisconnected && (
-            <div className="hidden md:flex items-center space-x-6">
-              <ConnectButton />
-            </div>
-          ))}
+        <div className="hidden md:flex items-center space-x-6">
+          {isConnecting ||
+            !isConnected ||
+            (isDisconnected && <ConnectButton />)}
+          <ThemeSwitch />
+        </div>
 
         <div className="flex items-center md:hidden">
           {isConnecting ||
