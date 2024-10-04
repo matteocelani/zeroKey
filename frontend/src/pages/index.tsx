@@ -8,7 +8,7 @@ export default function Home() {
     <Fragment>
       <Meta />
       <div className="flex flex-col w-full h-full">
-      <Dashboard />
+        <Dashboard />
       </div>
     </Fragment>
   );
