@@ -5,15 +5,12 @@ import { useSafes } from '@/hooks/requests/useSafes';
 // Importing Components
 import Meta from '@/components/Meta';
 import Account from '@/components/Account';
+import AccountLoading from '@/components//Account/loading';
 
 export default function Dashboard() {
   const { data: safes, isLoading, error } = useSafes();
   const { address } = useAccount();
 
-  // Questo è un placeholder. Dovresti implementare una funzione per ottenere il saldo effettivo.
-  const getBalance = () => '0.0 ETH';
-
-  if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
   return (
@@ -27,22 +24,18 @@ export default function Dashboard() {
           </button>
         </div>
         <div className="space-y-4">
-          {safes &&
-            safes.map((safeAddress) => (
-              <Account
-                key={safeAddress}
-                address={safeAddress}
-                balance={getBalance()}
-                ensName={undefined} // Aggiungi la logica per ottenere l'ENS name se necessario
-              />
-            ))}
-          {/* Aggiungi l'account personale dell'utente */}
-          {address && (
-            <Account
-              address={address}
-              balance={getBalance()}
-              ensName={undefined} // Aggiungi la logica per ottenere l'ENS name se necessario
-            />
+          {isLoading ? (
+            Array(4)
+              .fill(null)
+              .map((_, index) => <AccountLoading key={index} />)
+          ) : (
+            <>
+              {safes &&
+                safes.map((safeAddress) => (
+                  <Account key={safeAddress} address={safeAddress} />
+                ))}
+              {address && <Account address={address} />}
+            </>
           )}
         </div>
       </div>

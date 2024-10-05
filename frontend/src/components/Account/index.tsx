@@ -1,18 +1,18 @@
 import React, { useMemo } from 'react';
 // Importin Next
 import Image from 'next/image';
+// Importing Hooks
+import { useEnsName, useEnsAvatar, useBalance } from 'wagmi';
 // Importing Icons
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa6';
 import { IoKey } from 'react-icons/io5';
 import { FaEthereum } from 'react-icons/fa';
 // Importing Utils
 import { getShortAddress } from '@/lib/utils/addressUtils';
+import { formatBalance } from '@/lib/utils/mathUtils';
 
 type AccountProps = {
   address: string;
-  balance: string;
-  ensName?: string;
-  ensImage?: string;
 };
 
 const emojis = [
@@ -63,13 +63,28 @@ function generateAvatarData(address: string) {
   };
 }
 
-export default function Account({
-  address,
-  balance,
-  ensName,
-  ensImage,
-}: AccountProps) {
+export default function Account({ address }: AccountProps) {
   const avatarData = useMemo(() => generateAvatarData(address), [address]);
+
+  const { data: ensName } = useEnsName({
+    address: address as `0x${string}`,
+    chainId: 8453, // Base network
+  });
+
+  const { data: ensAvatar } = useEnsAvatar({
+    name: ensName ?? undefined,
+    chainId: 8453, // Base network
+  });
+
+  const { data: balanceData } = useBalance({
+    address: address as `0x${string}`,
+    chainId: 8453, // Base network
+  });
+
+  const displayName = ensName || getShortAddress(address);
+  const balance = balanceData
+    ? `${formatBalance(balanceData.value)} ${balanceData.symbol}`
+    : '0.0 ETH';
 
   return (
     <div className="max-w-2xl mx-auto bg-01 dark:bg-08 rounded-lg px-4 py-3 shadow-md">
@@ -79,9 +94,9 @@ export default function Account({
             className="w-14 h-14 flex-shrink-0 mr-4 flex items-center justify-center rounded-full overflow-hidden"
             style={{ backgroundColor: avatarData.backgroundColor }}
           >
-            {ensImage ? (
+            {ensAvatar ? (
               <Image
-                src={ensImage}
+                src={ensAvatar}
                 alt="ENS Avatar"
                 width={56}
                 height={56}
@@ -92,9 +107,7 @@ export default function Account({
             )}
           </div>
           <div className="flex-grow">
-            <p className="font-semibold text-07 dark:text-02">
-              {ensName || getShortAddress(address)}
-            </p>
+            <p className="font-semibold text-07 dark:text-02">{displayName}</p>
             <p className="text-06 dark:text-04">{balance}</p>
           </div>
         </div>
