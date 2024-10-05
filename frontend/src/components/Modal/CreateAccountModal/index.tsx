@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import StepProof from '@/components/StepProof';
-import SetupENS from '@/components/SetupENS';
 import Recap from '@/components/Modal/CreateAccountModal/Recap';
 
 enum CreateAccountStep {
   Proof1 = 1,
   Proof2,
   Proof3,
-  SetupENS,
   Review,
 }
 
@@ -15,7 +13,6 @@ const stepTitles: Record<CreateAccountStep, string> = {
   [CreateAccountStep.Proof1]: 'Proof 1',
   [CreateAccountStep.Proof2]: 'Proof 2',
   [CreateAccountStep.Proof3]: 'Proof 3',
-  [CreateAccountStep.SetupENS]: 'Setup ENS',
   [CreateAccountStep.Review]: 'Review',
 };
 
@@ -29,7 +26,6 @@ export default function CreateAccountModal({
   const [step, setStep] = useState<CreateAccountStep>(CreateAccountStep.Proof1);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
-  const [ensName, setEnsName] = useState('');
 
   const handleQuestionSelect = (questionIndex: number, stepNumber: number) => {
     const newSelectedQuestions = [...selectedQuestions];
@@ -47,15 +43,6 @@ export default function CreateAccountModal({
   const handlePrevStep = () => setStep((step - 1) as CreateAccountStep);
 
   const handleFinishProof = () => {
-    setStep(CreateAccountStep.SetupENS);
-  };
-
-  const handleSkipENS = () => {
-    setStep(CreateAccountStep.Review);
-  };
-
-  const handleSetENS = (name: string) => {
-    setEnsName(name);
     setStep(CreateAccountStep.Review);
   };
 
@@ -63,7 +50,6 @@ export default function CreateAccountModal({
     console.log('Creating account with:', {
       selectedQuestions,
       answers,
-      ensName,
     });
     onClose();
   };
@@ -142,15 +128,10 @@ export default function CreateAccountModal({
             />
           )}
 
-          {step === CreateAccountStep.SetupENS && (
-            <SetupENS onSkip={handleSkipENS} onSetENS={handleSetENS} isDeploy />
-          )}
-
           {step === CreateAccountStep.Review && (
             <Recap
               selectedQuestions={selectedQuestions}
               answers={answers}
-              ensName={ensName}
               onConfirm={handleCreateAccount}
               onCancel={onClose}
             />

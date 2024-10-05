@@ -137,7 +137,6 @@ export function sha256PackedTo128BitFields(
   const buffer = Buffer.alloc(64);
 
   inputs.forEach((input, index) => {
-    // @ts-expect-error - Argument of type 'bigint' is not assignable to parameter of type 'number'
     buffer.writeBigUInt64BE(input >> 64n, index * 16);
     buffer.writeBigUInt64BE(
       input & BigInt('0xFFFFFFFFFFFFFFFF'),

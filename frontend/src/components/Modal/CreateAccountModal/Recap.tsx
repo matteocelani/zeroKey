@@ -18,7 +18,6 @@ import { ZERO_CONTRACT_ADDRESS } from '@/lib/constants';
 type RecapProps = {
   selectedQuestions: string[];
   answers: string[];
-  ensName: string;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -26,7 +25,6 @@ type RecapProps = {
 export default function Recap({
   selectedQuestions,
   answers,
-  ensName,
   onConfirm,
   onCancel,
 }: RecapProps) {
@@ -87,8 +85,6 @@ export default function Recap({
         version: '1.4.1',
       });
 
-      console.log('Safe Account:', safeAccount);
-
       const smartAccountClient = createSmartAccountClient({
         account: safeAccount,
         chain: base,
@@ -108,25 +104,22 @@ export default function Recap({
       ]);
 
       // Send a transaction to register the account on the blockchain
-      const txHash = await smartAccountClient.sendUserOperation({
+      await smartAccountClient.sendUserOperation({
         calls: [
           {
             to: smartAccountClient.account.address,
-            value: parseEther('0'), // Sending 0 ETH
+            value: parseEther('0'),
             data: iface.encodeFunctionData('enableModule', [
               ZERO_CONTRACT_ADDRESS,
             ]) as `0x${string}`,
           },
           {
             to: ZERO_CONTRACT_ADDRESS,
-            value: parseEther('0'), // Sending 0 ETH
+            value: parseEther('0'),
             data: iface.encodeFunctionData('setHash', [hash]) as `0x${string}`,
           },
         ],
       });
-
-      console.log('Transaction hash:', txHash);
-
       onConfirm();
     } catch (err) {
       console.error(
@@ -163,15 +156,6 @@ export default function Recap({
             </div>
           ))}
         </section>
-
-        {ensName && (
-          <section>
-            <h4 className="font-medium text-06 dark:text-04 mb-2">ENS Name:</h4>
-            <div className="bg-02 dark:bg-08 p-3 rounded-lg">
-              <p className="text-sm text-07 dark:text-03">{ensName}</p>
-            </div>
-          </section>
-        )}
       </div>
 
       {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
