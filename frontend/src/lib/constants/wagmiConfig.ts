@@ -42,8 +42,6 @@ import {
 import { http } from 'wagmi';
 import { base } from 'wagmi/chains';
 
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '';
-
 //const { wallets } = getDefaultWallets();
 const wallets = [
   //...getDefaultWallets().wallets,
