@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+// Importing Hooks
+import { useAccount, useClient, useConnectorClient } from 'wagmi';
 // Importing Utils
 import { ethers } from 'ethers';
 import { http, parseEther } from 'viem';
 import { base } from 'viem/chains';
-import { useAccount, useClient, useConnectorClient } from 'wagmi';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
 import { entryPoint07Address } from 'viem/account-abstraction';
 import { toSafeSmartAccount } from 'permissionless/accounts';
 import { createSmartAccountClient } from 'permissionless';
 import { generateHash } from '@/lib/utils/secretUtils';
+import { serializeQuestionsAndAnswers } from '@/lib/utils/secretUtils';
 // Importing Constants
 import { SECURITY_QUESTIONS } from '@/lib/constants/questions';
 import { ZERO_CONTRACT_ADDRESS } from '@/lib/constants';
@@ -34,14 +36,6 @@ export default function Recap({
   const client = useClient();
   const { data: connectorClient } = useConnectorClient();
 
-  const concatenateQuestionsAndAnswers = (): string => {
-    return selectedQuestions.reduce((acc, questionIndex, i) => {
-      const question = SECURITY_QUESTIONS[parseInt(questionIndex)];
-      const answer = answers[i];
-      return acc + question + answer;
-    }, '');
-  };
-
   const createSmartAccount = async () => {
     if (!address) {
       setError('Wallet not connected');
@@ -57,8 +51,11 @@ export default function Recap({
         throw new Error('Pimlico API key not found');
       }
 
-      const concatenated = concatenateQuestionsAndAnswers();
-      const hash = generateHash(concatenated);
+      const serialized = serializeQuestionsAndAnswers(
+        selectedQuestions,
+        answers
+      );
+      const hash = generateHash(serialized);
 
       const paymasterClient = createPimlicoClient({
         transport: http(
