@@ -4,7 +4,7 @@ import { useEnsAddress, useReadContract } from 'wagmi';
 // Import Icons
 import { CgSpinner } from 'react-icons/cg';
 // Import Utils
-import { parseUnits, formatEther } from 'viem';
+import { formatBalance } from '@/lib/utils/mathUtils';
 // Import Constants
 import { ENS_BASE } from '@/lib/constants';
 import { baseRegistrarController } from '@/lib/constants/wagmiContractConfig';
@@ -12,13 +12,19 @@ import { baseRegistrarController } from '@/lib/constants/wagmiContractConfig';
 type SetupENSProps = {
   onSkip: () => void;
   onSetENS: (name: string, duration: number) => void;
+  isDeploy?: boolean;
 };
 
-export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
+export default function SetupENS({
+  onSkip,
+  onSetENS,
+  isDeploy,
+}: SetupENSProps) {
   const [ensName, setEnsName] = useState('');
   const [isValidENS, setIsValidENS] = useState(false);
   const [isCheckingENS, setIsCheckingENS] = useState(false);
   const [years, setYears] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
   const fullEnsName = ensName ? `${ensName}${ENS_BASE}` : '';
 
@@ -33,12 +39,36 @@ export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
   const { data: registerPrice } = useReadContract({
     ...baseRegistrarController,
     functionName: 'registerPrice',
-    args: ensName ? [ensName, BigInt(durationInSeconds)] : undefined,
+    // @ts-ignore - TS doesn't recognize number as a valid type for args
+    args: ensName.length >= 3 ? [ensName, durationInSeconds] : undefined,
   });
 
   useEffect(() => {
-    setIsCheckingENS(isLoading);
-    setIsValidENS(ensName.length > 0 && !ensAddress);
+    if (ensName.length >= 3) {
+      setIsCheckingENS(true);
+    } else {
+      setIsCheckingENS(false);
+    }
+
+    if (ensName.length === 1 || ensName.length === 2) {
+      setError('ENS name must be at least 3 characters long');
+      setIsValidENS(false);
+    } else if (ensName.length > 20) {
+      setError('ENS name must not exceed 20 characters');
+      setIsValidENS(false);
+    } else if (ensName.length >= 3 && !isLoading) {
+      if (ensAddress) {
+        setError('This ENS name is already taken');
+        setIsValidENS(false);
+      } else {
+        setError(null);
+        setIsValidENS(true);
+      }
+      setIsCheckingENS(false);
+    } else {
+      setError(null);
+      setIsValidENS(false);
+    }
   }, [ensName, ensAddress, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,12 +78,12 @@ export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
     }
   };
 
-  const incrementYears = () => setYears((y) => Math.min(y + 1, 10));
-  const decrementYears = () => setYears((y) => Math.max(y, 1));
+  const incrementYears = () => setYears((y) => y + 1);
+  const decrementYears = () => setYears((y) => (y > 1 ? y - 1 : 1));
 
   const formattedPrice = useMemo(() => {
     if (!registerPrice) return null;
-    return formatEther(registerPrice);
+    return formatBalance(registerPrice);
   }, [registerPrice]);
 
   return (
@@ -85,14 +115,12 @@ export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
             </span>
           </div>
         </div>
-        {ensName && (
-          <p
-            className={`text-sm ${isValidENS ? 'text-success' : 'text-danger'}`}
-          >
-            {isValidENS
-              ? `${fullEnsName} is available!`
-              : `${fullEnsName} is already taken.`}
-          </p>
+        {error && <p className="text-sm text-danger">{error}</p>}
+        {isCheckingENS && (
+          <p className="text-sm text-warning">Checking availability...</p>
+        )}
+        {isValidENS && !isCheckingENS && (
+          <p className="text-sm text-success">{fullEnsName} is available!</p>
         )}
         <div className="flex items-center justify-between">
           <span className="text-07 dark:text-03">Registration period:</span>
@@ -116,22 +144,24 @@ export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
             </button>
           </div>
         </div>
-        {registerPrice && (
+        {formattedPrice && (
           <p className="text-sm text-07 dark:text-03">
-            Registration price: {formatEther(registerPrice)} ETH
+            Registration price: {formattedPrice} ETH
           </p>
         )}
-        <div className="flex justify-between">
-          <button
-            type="button"
-            onClick={onSkip}
-            className="px-4 py-2 bg-03 dark:bg-07 text-07 dark:text-03 rounded-lg transition-colors"
-          >
-            Skip
-          </button>
+        <div className={`flex ${isDeploy ? 'justify-between' : 'justify-end'}`}>
+          {isDeploy && (
+            <button
+              type="button"
+              onClick={onSkip}
+              className="px-4 py-2 bg-03 dark:bg-07 text-07 dark:text-03 rounded-lg transition-colors"
+            >
+              Skip
+            </button>
+          )}
           <button
             type="submit"
-            disabled={!isValidENS}
+            disabled={!isValidENS || isCheckingENS}
             className="px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors"
           >
             Set ENS Name
