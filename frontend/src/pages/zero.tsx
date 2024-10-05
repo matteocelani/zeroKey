@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+// Importing Hooks
+import { useEnsAddress, useEnsName } from 'wagmi';
 // Importing Icons
 import { CgSpinner } from 'react-icons/cg';
+import { MdDone, MdClose } from 'react-icons/md';
 // Importing Components
 import Meta from '@/components/Meta';
 import StepProof from '@/components/StepProof';
@@ -16,19 +19,43 @@ export default function Zero() {
   const [answers, setAnswers] = useState<string[]>(['', '', '']);
   const [proofString, setProofString] = useState('');
   const [address, setAddress] = useState('');
-  const [addressError, setAddressError] = useState('');
+  const [isValidRecipient, setIsValidRecipient] = useState(false);
+  const [isCheckingENS, setIsCheckingENS] = useState(false);
   const [isGeneratingProof, setIsGeneratingProof] = useState(false);
   const [proofGenerated, setProofGenerated] = useState(false);
 
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAddress = e.target.value;
-    setAddress(newAddress);
+  const lowerCaseAddress = address.toLowerCase();
 
-    if (newAddress && !isValidAddress(newAddress)) {
-      setAddressError('Please enter a valid Ethereum address or ENS domain');
-    } else {
-      setAddressError('');
-    }
+  const { data: ensAddress, isLoading: isLoadingEnsAddress } = useEnsAddress({
+    name: lowerCaseAddress.includes('.') ? lowerCaseAddress : undefined,
+    chainId: 1, // Mainnet for ENS resolution
+  });
+
+  const { data: ensName, isLoading: isLoadingEnsName } = useEnsName({
+    address: isValidAddress(lowerCaseAddress)
+      ? (lowerCaseAddress as `0x${string}`)
+      : undefined,
+    chainId: 1, // Mainnet for ENS resolution
+  });
+
+  useEffect(() => {
+    const isValidEthAddress = isValidAddress(lowerCaseAddress);
+    const isValidEns =
+      lowerCaseAddress.includes('.') && lowerCaseAddress.length > 3;
+    const isResolved = Boolean(ensAddress) || Boolean(ensName);
+
+    setIsValidRecipient(isValidEthAddress || (isValidEns && isResolved));
+    setIsCheckingENS(isLoadingEnsAddress || isLoadingEnsName);
+  }, [
+    lowerCaseAddress,
+    ensAddress,
+    ensName,
+    isLoadingEnsAddress,
+    isLoadingEnsName,
+  ]);
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAddress(e.target.value);
   };
 
   const handleQuestionSelect = (questionIndex: number, currentStep: number) => {
@@ -86,24 +113,38 @@ export default function Zero() {
       <h3 className="text-lg font-semibold text-07 dark:text-03">
         Enter Ethereum Address or ENS Domain
       </h3>
-      <div>
+      <div className="relative">
         <input
           type="text"
-          className={`w-full p-3 bg-01 dark:bg-08 border ${
-            addressError ? 'border-danger' : 'border-04 dark:border-06'
+          className={`w-full p-3 pr-10 bg-01 dark:bg-08 border ${
+            isValidRecipient ? 'border-success' : 'border-04 dark:border-06'
           } rounded-lg shadow-sm text-07 dark:text-03 focus:outline-none`}
           placeholder="0x...abc or example.eth"
           value={address}
           onChange={handleAddressChange}
         />
-        {addressError && (
-          <p className="mt-2 text-sm text-danger">{addressError}</p>
-        )}
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+          {isCheckingENS && (
+            <CgSpinner className="animate-spin h-5 w-5 text-06" />
+          )}
+          {!isCheckingENS && isValidRecipient && (
+            <MdDone className="h-5 w-5 text-success" />
+          )}
+          {!isCheckingENS && !isValidRecipient && address && (
+            <MdClose className="h-5 w-5 text-danger" />
+          )}
+        </div>
       </div>
+      {ensAddress && (
+        <div className="text-xs text-success mt-1">Resolved: {ensAddress}</div>
+      )}
+      {ensName && (
+        <div className="text-xs text-success mt-1">Resolved: {ensName}</div>
+      )}
       <div className="flex justify-end">
         <button
           onClick={() => setStep(1)}
-          disabled={!address || !!addressError}
+          disabled={!isValidRecipient}
           className="px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors"
         >
           Next
