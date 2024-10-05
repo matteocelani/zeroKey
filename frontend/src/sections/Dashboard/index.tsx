@@ -47,7 +47,6 @@ export default function Dashboard() {
                 safes.map((safeAddress) => (
                   <Account key={safeAddress} address={safeAddress} />
                 ))}
-              {address && <Account address={address} />}
             </>
           )}
         </div>

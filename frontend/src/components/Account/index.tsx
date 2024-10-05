@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 // Importin Next
 import Image from 'next/image';
 // Importing Hooks
-import { useEnsName, useEnsAvatar, useBalance } from 'wagmi';
+import { useEnsAvatar, useBalance, useEnsAddress } from 'wagmi';
+import { useBaseName } from '@/hooks/useBaseName';
 // Importing Icons
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa6';
 import { IoKey } from 'react-icons/io5';
@@ -14,6 +15,7 @@ import { formatBalance } from '@/lib/utils/mathUtils';
 import SendReceiveModal from '@/components/Modal/SendReceive';
 import SetupENSModal from '@/components/Modal/SetupENSModal';
 import SetupZeroKeyModal from '@/components/Modal/SetupZeroKeyModal';
+import { base } from 'wagmi/chains';
 
 type AccountProps = {
   address: string;
@@ -71,7 +73,9 @@ export default function Account({ address }: AccountProps) {
   const [activeModal, setActiveModal] = useState<
     'sendReceive' | 'setupENS' | 'setupZeroKey' | null
   >(null);
-  const [sendReceiveType, setSendReceiveType] = useState<'send' | 'receive'>('send');
+  const [sendReceiveType, setSendReceiveType] = useState<'send' | 'receive'>(
+    'send'
+  );
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
   const [proofStep, setProofStep] = useState(1);
@@ -82,34 +86,25 @@ export default function Account({ address }: AccountProps) {
     setSelectedQuestions([]);
     setAnswers([]);
   };
-  
-  const handleQuestionSelect = (questionIndex: number, step: number) => {
-    const newSelectedQuestions = [...selectedQuestions];
-    newSelectedQuestions[step - 1] = questionIndex.toString();
-    setSelectedQuestions(newSelectedQuestions);
-  };
-  
-  const handleAnswerChange = (answer: string, step: number) => {
-    const newAnswers = [...answers];
-    newAnswers[step - 1] = answer;
-    setAnswers(newAnswers);
-  };
-  
-  const handleNextStep = () => setProofStep(proofStep + 1);
-  const handlePrevStep = () => setProofStep(proofStep - 1);
-  
-  const handleFinishProof = () => {
-    // Implement ZeroKey setup logic here
-    console.log('ZeroKey setup completed', { selectedQuestions, answers });
-    closeModal();
-  };
 
   const avatarData = useMemo(() => generateAvatarData(address), [address]);
 
-  const { data: ensName } = useEnsName({
+  const { data: ensName, isLoading: isEnsLoading } = useBaseName({
     address: address as `0x${string}`,
-    chainId: 8453, // Base network
+    chain: base,
   });
+
+  console.log(`Account component - address: ${address}, ensName: ${ensName}, isLoading: ${isEnsLoading}`);
+
+  const displayName = useMemo(() => {
+    if (isEnsLoading) return 'Loading...';
+    if (ensName) {
+      return ensName;
+    }
+    return getShortAddress(address);
+  }, [ensName, address, isEnsLoading]);
+
+  console.log(`Final displayName for ${address}: ${displayName}`);
 
   const { data: ensAvatar } = useEnsAvatar({
     name: ensName ?? undefined,
@@ -121,7 +116,6 @@ export default function Account({ address }: AccountProps) {
     chainId: 8453, // Base network
   });
 
-  const displayName = ensName || getShortAddress(address);
   const balance = balanceData
     ? `${formatBalance(balanceData.value)} ${balanceData.symbol}`
     : '0.0 ETH';
