@@ -1,7 +1,6 @@
 // SetupZeroKeyModal.tsx
 import React, { useState } from 'react';
 import StepProof from '@/components/StepProof';
-import Recap from '@/components/Recap';
 
 type SetupZeroKeyModalProps = {
   onClose: () => void;
@@ -28,10 +27,6 @@ export default function SetupZeroKeyModal({ onClose }: SetupZeroKeyModalProps) {
   const handlePrevStep = () => setStep(step - 1);
 
   const handleFinishProof = () => {
-    setStep(4); // Move to the recap step
-  };
-
-  const handleConfirm = () => {
     console.log('ZeroKey setup completed', { selectedQuestions, answers });
     onClose();
   };
@@ -63,26 +58,16 @@ export default function SetupZeroKeyModal({ onClose }: SetupZeroKeyModalProps) {
           </button>
         </div>
 
-        {step <= 3 ? (
-          <StepProof
-            step={step}
-            selectedQuestions={selectedQuestions}
-            answers={answers}
-            onQuestionSelect={handleQuestionSelect}
-            onAnswerChange={handleAnswerChange}
-            onPrevStep={handlePrevStep}
-            onNextStep={handleNextStep}
-            onFinish={handleFinishProof}
-          />
-        ) : (
-          <Recap
-            selectedQuestions={selectedQuestions}
-            answers={answers}
-            ensName=""
-            onConfirm={handleConfirm}
-            onCancel={onClose}
-          />
-        )}
+        <StepProof
+          step={step}
+          selectedQuestions={selectedQuestions}
+          answers={answers}
+          onQuestionSelect={handleQuestionSelect}
+          onAnswerChange={handleAnswerChange}
+          onPrevStep={handlePrevStep}
+          onNextStep={handleNextStep}
+          onFinish={handleFinishProof}
+        />
       </div>
     </div>
   );

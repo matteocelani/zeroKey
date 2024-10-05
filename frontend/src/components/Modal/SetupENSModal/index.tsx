@@ -3,11 +3,10 @@ import React from 'react';
 import SetupENS from '@/components/SetupENS';
 
 type SetupENSModalProps = {
-  address: string;
   onClose: () => void;
 };
 
-export default function SetupENSModal({address, onClose }: SetupENSModalProps) {
+export default function SetupENSModal({ onClose }: SetupENSModalProps) {
   const handleSetENS = (name: string) => {
     console.log('Setting up ENS name:', name);
     onClose();
@@ -40,7 +39,7 @@ export default function SetupENSModal({address, onClose }: SetupENSModalProps) {
           </button>
         </div>
 
-        <SetupENS address={address} onSkip={onClose} onSetENS={handleSetENS} />
+        <SetupENS onSkip={onClose} onSetENS={handleSetENS} />
       </div>
     </div>
   );
