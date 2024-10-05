@@ -201,7 +201,7 @@ export default function Account({ address }: AccountProps) {
       )}
 
       {activeModal === 'setupENS' && (
-        <SetupENSModal onClose={closeModal} />
+        <SetupENSModal address={address} onClose={closeModal} />
       )}
 
       {activeModal === 'setupZeroKey' && (
