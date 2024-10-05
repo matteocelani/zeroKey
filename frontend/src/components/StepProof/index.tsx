@@ -1,33 +1,43 @@
 import React, { useState } from 'react';
 // Importing Icons
 import { IoIosArrowDown } from 'react-icons/io';
+// Importing Constants
+import { SECURITY_QUESTIONS } from '@/lib/constants/questions';
 
 type StepProofProps = {
   step: number;
-  questions: string[];
   selectedQuestions: string[];
   answers: string[];
   onQuestionSelect: (questionIndex: number, step: number) => void;
   onAnswerChange: (answer: string, step: number) => void;
   onPrevStep: () => void;
   onNextStep: () => void;
+  onFinish: () => void;
 };
 
 export default function StepProof({
   step,
-  questions,
   selectedQuestions,
   answers,
   onQuestionSelect,
   onAnswerChange,
   onPrevStep,
   onNextStep,
+  onFinish,
 }: StepProofProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const availableQuestions = questions.filter(
-    (q) => !selectedQuestions.includes(q)
+  const availableQuestions = SECURITY_QUESTIONS.filter(
+    (_, index) => !selectedQuestions.includes(index.toString())
   );
+
+  const handleNextOrFinish = () => {
+    if (step === 3) {
+      onFinish();
+    } else {
+      onNextStep();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -39,7 +49,11 @@ export default function StepProof({
           className="w-full p-3 bg-01 dark:bg-08 border border-04 dark:border-06 rounded-lg shadow-sm text-07 dark:text-03 cursor-pointer flex justify-between items-center"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <span>{selectedQuestions[step - 1] || 'Select a question'}</span>
+          <span>
+            {selectedQuestions[step - 1]
+              ? SECURITY_QUESTIONS[parseInt(selectedQuestions[step - 1])]
+              : 'Select a question'}
+          </span>
           <IoIosArrowDown
             className={`transition-transform duration-300 ${
               isOpen ? 'transform rotate-180' : ''
@@ -53,7 +67,7 @@ export default function StepProof({
                 key={index}
                 className="p-3 hover:bg-02 dark:hover:bg-07 cursor-pointer transition-colors duration-200"
                 onClick={() => {
-                  onQuestionSelect(index, step);
+                  onQuestionSelect(SECURITY_QUESTIONS.indexOf(q), step);
                   setIsOpen(false);
                 }}
               >
@@ -75,19 +89,17 @@ export default function StepProof({
       <div className="flex justify-between">
         <button
           onClick={onPrevStep}
-          disabled={step === 1}
-          className="px-4 py-2 bg-02 dark:bg-07 text-07 dark:text-03 rounded-lg disabled:opacity-50 transition-colors"
+          disabled={step === 0}
+          className="px-4 py-2 bg-03 dark:bg-07 text-07 dark:text-03 rounded-lg disabled:opacity-50 transition-colors"
         >
           Previous
         </button>
         <button
-          onClick={onNextStep}
-          disabled={
-            step === 3 || !selectedQuestions[step - 1] || !answers[step - 1]
-          }
+          onClick={handleNextOrFinish}
+          disabled={!selectedQuestions[step - 1] || !answers[step - 1]}
           className="px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors"
         >
-          {step === 3 ? 'Finish' : 'Next'}
+          {step === 3 ? 'Generate the Proof' : 'Next'}
         </button>
       </div>
     </div>

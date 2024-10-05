@@ -10,18 +10,25 @@ interface SafeAccountsResponse {
 }
 
 export function useAccounts(ownerAddress: string) {
-  const defaultQueryOptions = useMemo(() => ({
-    staleTime: FIVE_MINUTES,
-    gcTime: FIVE_MINUTES,
-    retry: 3,
-  }), []);
+  const defaultQueryOptions = useMemo(
+    () => ({
+      staleTime: FIVE_MINUTES,
+      gcTime: FIVE_MINUTES,
+      retry: 3,
+    }),
+    []
+  );
 
   const fetchAccounts = useCallback(async (): Promise<SafeAccountsResponse> => {
-    const response = await axios.get(`${BASE_URL}/v1/owners/${ownerAddress}/safes`);
+    const response = await axios.get(
+      `${BASE_URL}/v1/owners/${ownerAddress}/safes`
+    );
     return response.data;
   }, [ownerAddress]);
 
-  const useGetAccounts = (options?: UseQueryOptions<SafeAccountsResponse, Error>) => {
+  const useGetAccounts = (
+    options?: UseQueryOptions<SafeAccountsResponse, Error>
+  ) => {
     return useQuery<SafeAccountsResponse, Error>({
       queryKey: ['accounts', ownerAddress],
       queryFn: fetchAccounts,

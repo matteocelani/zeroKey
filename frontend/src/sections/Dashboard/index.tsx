@@ -1,59 +1,44 @@
-import React, { useMemo } from 'react';
+import React from 'react';
+// Importing Hooks
+import { useAccount } from 'wagmi';
+import { useSafes } from '@/hooks/requests/useSafes';
+// Importing Components
 import Meta from '@/components/Meta';
 import Account from '@/components/Account';
-import { useAccounts } from '@/hooks/useAccounts';
-import { useAccount } from 'wagmi';
+import AccountLoading from '@/components//Account/loading';
 
-const Dashboard: React.FC = () => {
+export default function Dashboard() {
+  const { data: safes, isLoading, error } = useSafes();
   const { address } = useAccount();
 
-  const { useGetAccounts } = useAccounts(address || '');
-  const { data: accountsData, isLoading, error } = useGetAccounts();
-
-  const accounts = useMemo(() => {
-    if (!accountsData) return [];
-    return Object.entries(accountsData).flatMap(([chainId, addresses]) =>
-      addresses.map((address) => ({
-        id: `${chainId}-${address}`,
-        address,
-        balance: 'Loading...', // You'd need to fetch balances separately
-      }))
-    );
-  }, [accountsData]);
-
-  if (!address) {
-    return <div>Please connect your wallet to view accounts.</div>;
-  }
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <>
       <Meta />
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-xl xs:text-2xl s:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-warning to-danger text-transparent bg-clip-text leading-normal py-2">
-              Zero Key Accounts
-            </h1>
-            <button className="bg-03 text-07 px-4 py-2 rounded-lg hover:bg-04 transition-colors">
-              Create Account
-            </button>
-          </div>
-          {isLoading && <div>Loading accounts...</div>}
-          {error && <div>Error loading accounts: {error.message}</div>}
-          {accounts.length > 0 && (
-            <div className="space-y-4">
-              {accounts.map((account) => (
-                <Account key={account.id} {...account} />
-              ))}
-            </div>
-          )}
-          {!isLoading && !error && accounts.length === 0 && (
-            <div>No accounts found for this address.</div>
+        <div className="max-w-2xl mx-auto flex justify-between items-center mb-8">
+          <h1 className="text-xl font-medium bg-clip-text">Smart Account</h1>
+          <button className="bg-success px-4 py-2 rounded-lg">
+            Create Account
+          </button>
+        </div>
+        <div className="space-y-4">
+          {isLoading ? (
+            Array(4)
+              .fill(null)
+              .map((_, index) => <AccountLoading key={index} />)
+          ) : (
+            <>
+              {safes &&
+                safes.map((safeAddress) => (
+                  <Account key={safeAddress} address={safeAddress} />
+                ))}
+              {address && <Account address={address} />}
+            </>
           )}
         </div>
       </div>
     </>
   );
-};
-
-export default Dashboard;
+}

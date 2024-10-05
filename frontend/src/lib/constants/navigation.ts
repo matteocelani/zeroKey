@@ -1,10 +1,16 @@
 // Importing icons
-import { IoPlanet } from 'react-icons/io5';
+import { RiDashboardFill } from 'react-icons/ri';
+import { GoPasskeyFill } from 'react-icons/go';
 
 export const navigation = [
   {
-    name: 'Home',
+    name: 'Dashboard',
     href: '/',
-    icon: IoPlanet,
+    icon: RiDashboardFill,
+  },
+  {
+    name: 'Zero Send or Recover',
+    href: '/zero',
+    icon: GoPasskeyFill,
   },
 ];
