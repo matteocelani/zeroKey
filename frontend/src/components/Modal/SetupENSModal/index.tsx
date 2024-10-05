@@ -1,4 +1,3 @@
-// SetupENSModal.tsx
 import React from 'react';
 import SetupENS from '@/components/SetupENS';
 
