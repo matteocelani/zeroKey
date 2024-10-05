@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Importing Hooks
-import { useEnsAddress, useEnsName } from 'wagmi';
+import { useEnsAddress, useEnsName, useAccount } from 'wagmi';
 // Importing Icons
 import { CgSpinner } from 'react-icons/cg';
 import { MdDone, MdClose } from 'react-icons/md';
@@ -11,8 +11,14 @@ import SendInterface from '@/components/SendInterface';
 import RecoverInterface from '@/components/RecoverInterface';
 // Importing Utils
 import { isValidAddress } from '@/lib/utils/addressUtils';
+import {
+  generateProof,
+  serializeQuestionsAndAnswers,
+} from '@/lib/utils/secretUtils';
 
 export default function Zero() {
+  const { address: adr } = useAccount();
+
   const [activeTab, setActiveTab] = useState('send');
   const [step, setStep] = useState(0);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
@@ -95,17 +101,28 @@ export default function Zero() {
     }
   };
 
-  const handleGenerateProof = () => {
+  const handleGenerateProof = async () => {
     setIsGeneratingProof(true);
-    // Simulating proof generation
-    setTimeout(() => {
-      const newProofString = selectedQuestions
-        .map((q, i) => `${q}:${answers[i]}`)
-        .join(';');
-      setProofString(newProofString);
+    if (!adr) {
+      console.error('No account found');
       setIsGeneratingProof(false);
+      return;
+    }
+    try {
+      const concatenated = serializeQuestionsAndAnswers(
+        selectedQuestions,
+        answers
+      );
+      const proof = await generateProof(concatenated, adr);
+      console.log('Generated proof:', proof);
+      setProofString(JSON.stringify(proof)); // Assuming you want to store the proof as a string
       setProofGenerated(true);
-    }, 3000); // 3 seconds simulation
+    } catch (error) {
+      console.error('Error generating proof:', error);
+      // Handle error (e.g., show error message to user)
+    } finally {
+      setIsGeneratingProof(false);
+    }
   };
 
   const renderAddressInput = () => (
