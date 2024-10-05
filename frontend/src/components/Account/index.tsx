@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 // Importin Next
 import Image from 'next/image';
 // Importing Hooks
@@ -10,6 +10,8 @@ import { FaEthereum } from 'react-icons/fa';
 // Importing Utils
 import { getShortAddress } from '@/lib/utils/addressUtils';
 import { formatBalance } from '@/lib/utils/mathUtils';
+// Importing Components
+import SendReceiveModal from '@/components/Modal/SendReceive';
 
 type AccountProps = {
   address: string;
@@ -64,6 +66,13 @@ function generateAvatarData(address: string) {
 }
 
 export default function Account({ address }: AccountProps) {
+  const [activeModal, setActiveModal] = useState<
+    'sendReceive' | 'setupENS' | 'setupZeroKey' | null
+  >(null);
+  const [sendReceiveType, setSendReceiveType] = useState<'send' | 'receive'>(
+    'send'
+  );
+
   const avatarData = useMemo(() => generateAvatarData(address), [address]);
 
   const { data: ensName } = useEnsName({
@@ -86,50 +95,92 @@ export default function Account({ address }: AccountProps) {
     ? `${formatBalance(balanceData.value)} ${balanceData.symbol}`
     : '0.0 ETH';
 
+  const openSendReceiveModal = (type: 'send' | 'receive') => {
+    setSendReceiveType(type);
+    setActiveModal('sendReceive');
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+  };
+
   return (
-    <div className="max-w-2xl mx-auto bg-01 dark:bg-08 rounded-lg px-4 py-3 shadow-md">
-      <div className="flex flex-col md:flex-row items-center justify-between">
-        <div className="flex items-center w-full md:w-auto mb-4 md:mb-0">
-          <div
-            className="w-14 h-14 flex-shrink-0 mr-4 flex items-center justify-center rounded-full overflow-hidden"
-            style={{ backgroundColor: avatarData.backgroundColor }}
-          >
-            {ensAvatar ? (
-              <Image
-                src={ensAvatar}
-                alt="ENS Avatar"
-                width={56}
-                height={56}
-                className="object-cover"
-              />
-            ) : (
-              <span className="text-2xl">{avatarData.emoji}</span>
-            )}
+    <>
+      <div className="max-w-2xl mx-auto bg-01 dark:bg-08 rounded-lg px-4 py-3 shadow-md">
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <div className="flex items-center w-full md:w-auto mb-4 md:mb-0">
+            <div
+              className="w-14 h-14 flex-shrink-0 mr-4 flex items-center justify-center rounded-full overflow-hidden"
+              style={{ backgroundColor: avatarData.backgroundColor }}
+            >
+              {ensAvatar ? (
+                <Image
+                  src={ensAvatar}
+                  alt="ENS Avatar"
+                  width={56}
+                  height={56}
+                  className="object-cover"
+                />
+              ) : (
+                <span className="text-2xl">{avatarData.emoji}</span>
+              )}
+            </div>
+            <div className="flex-grow">
+              <p className="font-semibold text-07 dark:text-02">
+                {displayName}
+              </p>
+              <p className="text-06 dark:text-04">{balance}</p>
+            </div>
           </div>
-          <div className="flex-grow">
-            <p className="font-semibold text-07 dark:text-02">{displayName}</p>
-            <p className="text-06 dark:text-04">{balance}</p>
-          </div>
-        </div>
-        <div className="flex flex-col md:flex-row w-full md:w-auto gap-2 md:gap-4">
-          <div className="grid grid-cols-2 md:flex md:flex-col gap-2 w-full md:w-auto">
-            <button className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap">
-              <FaArrowUp className="mr-1 w-3 h-3" /> Send
-            </button>
-            <button className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap">
-              <FaArrowDown className="mr-1 w-3 h-3" /> Receive
-            </button>
-          </div>
-          <div className="grid grid-cols-2 md:flex md:flex-col gap-2 w-full md:w-auto">
-            <button className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap">
-              <FaEthereum className="mr-1 w-3 h-3" /> Setup ENS
-            </button>
-            <button className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap">
-              <IoKey className="mr-1 w-3 h-3" /> Setup ZeroKey
-            </button>
+          <div className="flex flex-col md:flex-row w-full md:w-auto gap-2 md:gap-4">
+            <div className="grid grid-cols-2 md:flex md:flex-col gap-2 w-full md:w-auto">
+              <button
+                onClick={() => openSendReceiveModal('send')}
+                className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap"
+              >
+                <FaArrowUp className="mr-1 w-3 h-3" /> Send
+              </button>
+              <button
+                onClick={() => openSendReceiveModal('receive')}
+                className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap"
+              >
+                <FaArrowDown className="mr-1 w-3 h-3" /> Receive
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:flex md:flex-col gap-2 w-full md:w-auto">
+              <button
+                onClick={() => setActiveModal('setupENS')}
+                className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap"
+              >
+                <FaEthereum className="mr-1 w-3 h-3" /> Setup ENS
+              </button>
+              <button
+                onClick={() => setActiveModal('setupZeroKey')}
+                className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap"
+              >
+                <IoKey className="mr-1 w-3 h-3" /> Setup ZeroKey
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {activeModal === 'sendReceive' && (
+        <SendReceiveModal
+          address={address}
+          onClose={closeModal}
+          initialTab={sendReceiveType}
+        />
+      )}
+
+      {/* Placeholder for future modals */}
+      {activeModal === 'setupENS' && (
+        <div>Setup ENS Modal (to be implemented)</div>
+      )}
+
+      {activeModal === 'setupZeroKey' && (
+        <div>Setup ZeroKey Modal (to be implemented)</div>
+      )}
+    </>
   );
 }

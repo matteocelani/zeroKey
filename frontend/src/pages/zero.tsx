@@ -6,6 +6,8 @@ import Meta from '@/components/Meta';
 import StepProof from '@/components/StepProof';
 import SendInterface from '@/components/SendInterface';
 import RecoverInterface from '@/components/RecoverInterface';
+// Importing Utils
+import { isValidAddress } from '@/lib/utils/addressUtils';
 
 export default function Zero() {
   const [activeTab, setActiveTab] = useState('send');
@@ -17,12 +19,6 @@ export default function Zero() {
   const [addressError, setAddressError] = useState('');
   const [isGeneratingProof, setIsGeneratingProof] = useState(false);
   const [proofGenerated, setProofGenerated] = useState(false);
-
-  const isValidAddress = (address: string) => {
-    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    const ensRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+eth$/;
-    return ethAddressRegex.test(address) || ensRegex.test(address);
-  };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newAddress = e.target.value;

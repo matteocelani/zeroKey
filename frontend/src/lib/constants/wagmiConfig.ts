@@ -40,7 +40,7 @@ import {
 } from '@rainbow-me/rainbowkit/wallets';
 // Wagmi
 import { http } from 'wagmi';
-import { base } from 'wagmi/chains';
+import { base, mainnet } from 'wagmi/chains';
 
 //const { wallets } = getDefaultWallets();
 const wallets = [
@@ -96,9 +96,10 @@ export const wagmiConfig = getDefaultConfig({
   appName: 'Zero Key',
   projectId: 'fe5fda9122acca6c030535059b4181fb',
   wallets: wallets,
-  chains: [base],
+  chains: [base, mainnet],
   transports: {
     [base.id]: http(),
+    [mainnet.id]: http(),
   },
   ssr: true,
 });
