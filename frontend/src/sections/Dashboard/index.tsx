@@ -1,34 +1,44 @@
 import React from 'react';
+// Importing Hooks
+import { useAccount } from 'wagmi';
+import { useSafes } from '@/hooks/requests/useSafes';
+// Importing Components
 import Meta from '@/components/Meta';
 import Account from '@/components/Account';
+import AccountLoading from '@/components//Account/loading';
 
-const Dashboard: React.FC = () => {
-  // This would typically come from your state management or API
-  const accounts = [
-    { id: 1, address: '0x1234...5678', balance: '1.5 ETH' },
-    { id: 2, address: 'johndoe.eth', balance: '0.5 ETH' },
-  ];
+export default function Dashboard() {
+  const { data: safes, isLoading, error } = useSafes();
+  const { address } = useAccount();
+
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <>
       <Meta />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-xl xs:text-2xl s:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-warning to-danger text-transparent bg-clip-text">
-            Accounts
-          </h1>
-          <button className="bg-03 text-07 px-4 py-2 rounded-lg hover:bg-04 transition-colors">
+        <div className="max-w-2xl mx-auto flex justify-between items-center mb-8">
+          <h1 className="text-xl font-medium bg-clip-text">Smart Account</h1>
+          <button className="bg-success px-4 py-2 rounded-lg">
             Create Account
           </button>
         </div>
         <div className="space-y-4">
-          {accounts.map((account) => (
-            <Account key={account.id} {...account} />
-          ))}
+          {isLoading ? (
+            Array(4)
+              .fill(null)
+              .map((_, index) => <AccountLoading key={index} />)
+          ) : (
+            <>
+              {safes &&
+                safes.map((safeAddress) => (
+                  <Account key={safeAddress} address={safeAddress} />
+                ))}
+              {address && <Account address={address} />}
+            </>
+          )}
         </div>
       </div>
     </>
   );
-};
-
-export default Dashboard;
+}

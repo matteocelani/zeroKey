@@ -15,3 +15,9 @@ export function isEthAddress(address?: string | `0x${string}`): boolean {
   const regex = /^0x[a-fA-F0-9]{40}$/;
   return regex.test(address);
 }
+
+export function isValidAddress(address: string): boolean {
+  const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+  const ensRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+eth$/;
+  return ethAddressRegex.test(address) || ensRegex.test(address);
+}
