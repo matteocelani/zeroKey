@@ -1,21 +1,24 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 // Importin Next
 import Image from 'next/image';
 // Importing Hooks
-import { useEnsAvatar, useBalance, useEnsAddress } from 'wagmi';
+import { useEnsAvatar, useBalance, useConnectorClient } from 'wagmi';
 import { useBaseName } from '@/hooks/useBaseName';
 // Importing Icons
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa6';
-import { IoKey } from 'react-icons/io5';
+import { IoKey, IoShieldCheckmark } from 'react-icons/io5';
 import { FaEthereum } from 'react-icons/fa';
 // Importing Utils
 import { getShortAddress } from '@/lib/utils/addressUtils';
 import { formatBalance } from '@/lib/utils/mathUtils';
+import { SafeManager } from '@/lib/utils/safeManager';
 // Importing Components
 import SendReceiveModal from '@/components/Modal/SendReceive';
 import SetupENSModal from '@/components/Modal/SetupENSModal';
 import SetupZeroKeyModal from '@/components/Modal/SetupZeroKeyModal';
 import { base } from 'wagmi/chains';
+// Importing Constants
+import { ZERO_CONTRACT_ADDRESS } from '@/lib/constants';
 
 type AccountProps = {
   address: string;
@@ -76,35 +79,60 @@ export default function Account({ address }: AccountProps) {
   const [sendReceiveType, setSendReceiveType] = useState<'send' | 'receive'>(
     'send'
   );
-  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [proofStep, setProofStep] = useState(1);
+  const [isZeroKeyEnabled, setIsZeroKeyEnabled] = useState<boolean | null>(
+    null
+  );
+
+  const { data: connectorClient } = useConnectorClient();
+  const safeManager = useMemo(() => new SafeManager(), []);
+
+  useEffect(() => {
+    const initializeSafe = async () => {
+      if (connectorClient && address) {
+        try {
+          const initialized = await safeManager.initializeWallet(
+            address,
+            connectorClient
+          );
+          if (initialized) {
+            const isEnabled = await safeManager.isModuleEnabled(
+              ZERO_CONTRACT_ADDRESS
+            );
+            setIsZeroKeyEnabled(isEnabled);
+          }
+        } catch (error) {
+          console.error('Failed to initialize Safe or check module:', error);
+          setIsZeroKeyEnabled(false);
+        }
+      }
+    };
+
+    initializeSafe();
+  }, [address, connectorClient, safeManager]);
 
   const closeModal = () => {
     setActiveModal(null);
-    setProofStep(1);
-    setSelectedQuestions([]);
-    setAnswers([]);
   };
 
   const avatarData = useMemo(() => generateAvatarData(address), [address]);
 
-  const { data: ensName, isLoading: isEnsLoading } = useBaseName({
+  const { data: ensName } = useBaseName({
     address: address as `0x${string}`,
     chain: base,
   });
 
-  console.log(`Account component - address: ${address}, ensName: ${ensName}, isLoading: ${isEnsLoading}`);
-
   const displayName = useMemo(() => {
-    if (isEnsLoading) return 'Loading...';
+    const shortAddress = getShortAddress(address);
     if (ensName) {
-      return ensName;
+      return (
+        <span title={address}>
+          {ensName}{' '}
+          <span className="text-06 dark:text-04">({shortAddress})</span>
+        </span>
+      );
     }
-    return getShortAddress(address);
-  }, [ensName, address, isEnsLoading]);
-
-  console.log(`Final displayName for ${address}: ${displayName}`);
+    return shortAddress;
+  }, [ensName, address]);
 
   const { data: ensAvatar } = useEnsAvatar({
     name: ensName ?? undefined,
@@ -147,9 +175,17 @@ export default function Account({ address }: AccountProps) {
               )}
             </div>
             <div className="flex-grow">
-              <p className="font-semibold text-07 dark:text-02">
-                {displayName}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-07 dark:text-02">
+                  {displayName}
+                </p>
+                {isZeroKeyEnabled && (
+                  <IoShieldCheckmark
+                    className="ml-2 text-success"
+                    title="ZeroKey Enabled"
+                  />
+                )}
+              </div>
               <p className="text-06 dark:text-04">{balance}</p>
             </div>
           </div>
