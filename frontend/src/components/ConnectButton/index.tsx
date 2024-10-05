@@ -1,10 +1,15 @@
 import React from 'react';
-// Connect Button
-import { ConnectButton as RaimbowButton } from '@rainbow-me/rainbowkit';
+import { ConnectButton as RainbowButton } from '@rainbow-me/rainbowkit';
+// Import Utils
+import { getShortAddress } from '@/lib/utils/addressUtils';
 
-export default function ConnectButton({ className }: { className?: string }) {
+interface ConnectButtonProps {
+  className?: string;
+}
+
+export default function ConnectButton({ className }: ConnectButtonProps) {
   return (
-    <RaimbowButton.Custom>
+    <RainbowButton.Custom>
       {({
         account,
         chain,
@@ -21,6 +26,16 @@ export default function ConnectButton({ className }: { className?: string }) {
           chain &&
           (!authenticationStatus || authenticationStatus === 'authenticated');
 
+        const buttonText = connected
+          ? account.ensName || `${getShortAddress(account.address)}`
+          : 'Connect Wallet';
+
+        const handleClick = connected
+          ? chain.unsupported
+            ? openChainModal
+            : openAccountModal
+          : openConnectModal;
+
         return (
           <div
             {...(!ready && {
@@ -33,34 +48,16 @@ export default function ConnectButton({ className }: { className?: string }) {
             })}
             className={className}
           >
-            {(() => {
-              if (!connected) {
-                return (
-                  <button
-                    onClick={openConnectModal}
-                    type="button"
-                    className="w-40 flex items-center justify-center text-sm sm:text-base px-3 sm:px-4 py-2 rounded-lg bg-primary"
-                  >
-                    Connect Wallet
-                  </button>
-                );
-              }
-
-              return (
-                <button
-                  onClick={
-                    chain.unsupported ? openChainModal : openAccountModal
-                  }
-                  type="button"
-                  className="w-40 flex items-center justify-center text-sm sm:text-base px-3 sm:px-4 py-2 rounded-lg bg-primary"
-                >
-                  {account.displayName}
-                </button>
-              );
-            })()}
+            <button
+              onClick={handleClick}
+              type="button"
+              className="flex items-center justify-center text-sm sm:text-base px-3 sm:px-4 py-2 rounded-lg bg-primary text-white font-medium transition-colors hover:bg-primary/90"
+            >
+              {buttonText}
+            </button>
           </div>
         );
       }}
-    </RaimbowButton.Custom>
+    </RainbowButton.Custom>
   );
 }

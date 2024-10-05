@@ -12,6 +12,8 @@ import { getShortAddress } from '@/lib/utils/addressUtils';
 import { formatBalance } from '@/lib/utils/mathUtils';
 // Importing Components
 import SendReceiveModal from '@/components/Modal/SendReceive';
+import SetupENSModal from '@/components/Modal/SetupENSModal';
+import SetupZeroKeyModal from '@/components/Modal/SetupZeroKeyModal';
 
 type AccountProps = {
   address: string;
@@ -72,6 +74,37 @@ export default function Account({ address }: AccountProps) {
   const [sendReceiveType, setSendReceiveType] = useState<'send' | 'receive'>(
     'send'
   );
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [proofStep, setProofStep] = useState(1);
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setProofStep(1);
+    setSelectedQuestions([]);
+    setAnswers([]);
+  };
+
+  const handleQuestionSelect = (questionIndex: number, step: number) => {
+    const newSelectedQuestions = [...selectedQuestions];
+    newSelectedQuestions[step - 1] = questionIndex.toString();
+    setSelectedQuestions(newSelectedQuestions);
+  };
+
+  const handleAnswerChange = (answer: string, step: number) => {
+    const newAnswers = [...answers];
+    newAnswers[step - 1] = answer;
+    setAnswers(newAnswers);
+  };
+
+  const handleNextStep = () => setProofStep(proofStep + 1);
+  const handlePrevStep = () => setProofStep(proofStep - 1);
+
+  const handleFinishProof = () => {
+    // Implement ZeroKey setup logic here
+    console.log('ZeroKey setup completed', { selectedQuestions, answers });
+    closeModal();
+  };
 
   const avatarData = useMemo(() => generateAvatarData(address), [address]);
 
@@ -98,10 +131,6 @@ export default function Account({ address }: AccountProps) {
   const openSendReceiveModal = (type: 'send' | 'receive') => {
     setSendReceiveType(type);
     setActiveModal('sendReceive');
-  };
-
-  const closeModal = () => {
-    setActiveModal(null);
   };
 
   return (
@@ -173,13 +202,10 @@ export default function Account({ address }: AccountProps) {
         />
       )}
 
-      {/* Placeholder for future modals */}
-      {activeModal === 'setupENS' && (
-        <div>Setup ENS Modal (to be implemented)</div>
-      )}
+      {activeModal === 'setupENS' && <SetupENSModal onClose={closeModal} />}
 
       {activeModal === 'setupZeroKey' && (
-        <div>Setup ZeroKey Modal (to be implemented)</div>
+        <SetupZeroKeyModal onClose={closeModal} />
       )}
     </>
   );

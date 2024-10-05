@@ -4,7 +4,8 @@ import Link from 'next/link';
 //Importing Hooks
 import { useAccount } from 'wagmi';
 //Importing RainbowKit
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+// import { ConnectButton } from '@rainbow-me/rainbowkit';
+import ConnectButton from '@/components/ConnectButton';
 //Importing Components
 import ThemeSwitch from '@/components/ThemeSwitch';
 // Import Types
