@@ -164,10 +164,11 @@ export default function Zero() {
     }
 
     if (proofGenerated) {
+      const resolvedAddress = ensAddress || address;
       return activeTab === 'send' ? (
-        <SendInterface address={address} proofString={proofString} />
+        <SendInterface address={resolvedAddress} proofString={proofString} />
       ) : (
-        <RecoverInterface address={address} proofString={proofString} />
+        <RecoverInterface address={resolvedAddress} proofString={proofString} />
       );
     }
 
