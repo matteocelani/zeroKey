@@ -29,7 +29,7 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto flex justify-between items-center mb-8">
           <h1 className="text-xl font-medium bg-clip-text">Smart Accounts</h1>
-          <button 
+          <button
             className="bg-success px-4 py-2 rounded-lg text-white hover:bg-opacity-90 transition-colors"
             onClick={handleOpenCreateModal}
           >
