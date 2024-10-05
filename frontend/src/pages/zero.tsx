@@ -114,8 +114,7 @@ export default function Zero() {
         answers
       );
       const proof = await generateProof(concatenated, adr);
-      console.log('Generated proof:', proof);
-      setProofString(JSON.stringify(proof)); // Assuming you want to store the proof as a string
+      setProofString(JSON.stringify(proof));
       setProofGenerated(true);
     } catch (error) {
       console.error('Error generating proof:', error);

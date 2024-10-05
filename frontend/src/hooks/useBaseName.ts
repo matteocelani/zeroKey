@@ -1,5 +1,14 @@
 import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
-import { Address, Chain, createPublicClient, encodePacked, http, keccak256, namehash, parseAbi } from 'viem';
+import {
+  Address,
+  Chain,
+  createPublicClient,
+  encodePacked,
+  http,
+  keccak256,
+  namehash,
+  parseAbi,
+} from 'viem';
 import { useQuery } from '@tanstack/react-query';
 
 /**
@@ -66,7 +75,7 @@ type GetName = {
   chain?: Chain;
 };
 
-type GetNameReturnType = string | Basename | null
+type GetNameReturnType = string | Basename | null;
 
 const convertChainIdToCoinType = (chainId: number): string => {
   // L1 resolvers to addr
@@ -78,18 +87,16 @@ const convertChainIdToCoinType = (chainId: number): string => {
   return cointype.toString(16).toLocaleUpperCase();
 };
 
-const convertReverseNodeToBytes = (
-  address: Address,
-  chainId: number,
-) => {
+const convertReverseNodeToBytes = (address: Address, chainId: number) => {
   const addressFormatted = address.toLocaleLowerCase() as Address;
+  // @ts-expect-error - TS doesn't recognize the substring method
   const addressNode = keccak256(addressFormatted.substring(2) as Address);
   const chainCoinType = convertChainIdToCoinType(chainId);
   const baseReverseNode = namehash(
-    `${chainCoinType.toLocaleUpperCase()}.reverse`,
+    `${chainCoinType.toLocaleUpperCase()}.reverse`
   );
   const addressReverseNode = keccak256(
-    encodePacked(['bytes32', 'bytes32'], [baseReverseNode, addressNode]),
+    encodePacked(['bytes32', 'bytes32'], [baseReverseNode, addressNode])
   );
   return addressReverseNode;
 };
@@ -109,7 +116,7 @@ const getName = async ({
 
   if (!chainSupportsUniversalResolver) {
     return Promise.reject(
-      'ChainId not supported, name resolution is only supported on Ethereum and Base.',
+      'ChainId not supported, name resolution is only supported on Ethereum and Base.'
     );
   }
 
@@ -119,7 +126,9 @@ const getName = async ({
     const addressReverseNode = convertReverseNodeToBytes(address, base.id);
     try {
       const basename = await client.readContract({
-        abi: parseAbi(['function name(bytes32 node) external view returns (string)']),
+        abi: parseAbi([
+          'function name(bytes32 node) external view returns (string)',
+        ]),
         address: RESOLVER_ADDRESSES_BY_CHAIN_ID[chain.id],
         functionName: 'name',
         args: [addressReverseNode],
@@ -160,12 +169,12 @@ type UseQueryOptions = {
  */
 export const useBaseName = (
   { address, chain = mainnet }: UseNameOptions,
-  queryOptions?: UseQueryOptions,
+  queryOptions?: UseQueryOptions
 ) => {
   const { enabled = true, cacheTime } = queryOptions ?? {};
   const ensActionKey = `ens-name-${address}-${chain.id}`;
   return useQuery<GetNameReturnType>({
-    queryKey: ['useName', ensActionKey],
+    queryKey: ['useName', ensActionKey, address, chain],
     queryFn: async () => {
       return await getName({ address, chain });
     },

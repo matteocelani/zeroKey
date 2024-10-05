@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import StepProof from '@/components/StepProof';
-import SetupENS from '@/components/SetupENS';
 import Recap from '@/components/Recap';
 
 enum CreateAccountStep {
@@ -48,10 +47,6 @@ export default function CreateAccountModal({
   };
 
   const handleCreateAccount = () => {
-    console.log('Creating account with:', {
-      selectedQuestions,
-      answers,
-    });
     onClose();
   };
 
@@ -106,7 +101,7 @@ export default function CreateAccountModal({
       onClick={handleOutsideClick}
     >
       <div
-        className="bg-01 dark:bg-09 rounded-lg w-full max-w-md h-[90vh] flex flex-col"
+        className="bg-01 dark:bg-09 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-visible"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 flex-shrink-0">
@@ -124,9 +119,9 @@ export default function CreateAccountModal({
           {renderStepIndicator()}
         </div>
 
-        <div 
+        <div
           ref={contentRef}
-          className="flex-grow overflow-y-auto px-6 pb-6"
+          className="flex-grow overflow-y-visible px-6 pb-6"
         >
           {step <= CreateAccountStep.Proof3 && (
             <StepProof

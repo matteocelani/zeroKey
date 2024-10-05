@@ -78,7 +78,6 @@ export default function SetupZeroKeyModal({ onClose }: SetupZeroKeyModalProps) {
           <Recap
             selectedQuestions={selectedQuestions}
             answers={answers}
-            ensName=""
             onConfirm={handleConfirm}
             onCancel={onClose}
           />

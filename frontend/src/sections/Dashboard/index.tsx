@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 // Importing Hooks
-import { useAccount } from 'wagmi';
 import { useSafes } from '@/hooks/requests/useSafes';
 // Importing Components
 import Meta from '@/components/Meta';
@@ -10,7 +9,6 @@ import CreateAccountModal from '@/components/Modal/CreateAccountModal';
 
 export default function Dashboard() {
   const { data: safes, isLoading, error } = useSafes();
-  const { address } = useAccount();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   if (error) return <div>Error: {error.message}</div>;
