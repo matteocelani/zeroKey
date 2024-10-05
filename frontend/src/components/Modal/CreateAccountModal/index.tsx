@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import StepProof from '@/components/StepProof';
-import Recap from '@/components/Recap';
+import Recap from '@/components/Recap/new';
 
 enum CreateAccountStep {
   Proof1 = 1,

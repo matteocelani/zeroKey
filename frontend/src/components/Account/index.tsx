@@ -155,7 +155,7 @@ export default function Account({ address }: AccountProps) {
 
   return (
     <>
-      <div className="max-w-2xl mx-auto bg-01 dark:bg-08 rounded-lg px-4 py-3 shadow-md">
+      <div className="max-w-2xl mx-auto bg-01 dark:bg-08 rounded-lg px-4 py-3 shadow-md mb-4">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center w-full md:w-auto mb-4 md:mb-0">
             <div
@@ -213,9 +213,16 @@ export default function Account({ address }: AccountProps) {
               </button>
               <button
                 onClick={() => setActiveModal('setupZeroKey')}
-                className="text-xs bg-02 text-07 px-2 py-1 rounded flex items-center justify-center hover:bg-03 transition-colors w-full md:w-28 whitespace-nowrap"
+                disabled={isZeroKeyEnabled}
+                className={`text-xs px-2 py-1 rounded flex items-center justify-center transition-colors w-full md:w-28 whitespace-nowrap ${
+                  isZeroKeyEnabled
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-02 text-07 hover:bg-03'
+                }
+  `}
               >
-                <IoKey className="mr-1 w-3 h-3" /> Setup ZeroKey
+                <IoKey className="mr-1 w-3 h-3" />
+                Setup ZeroKey
               </button>
             </div>
           </div>
@@ -235,7 +242,7 @@ export default function Account({ address }: AccountProps) {
       )}
 
       {activeModal === 'setupZeroKey' && (
-        <SetupZeroKeyModal onClose={closeModal} />
+        <SetupZeroKeyModal onClose={closeModal} safeAddress={address} />
       )}
     </>
   );

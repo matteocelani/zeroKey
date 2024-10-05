@@ -1,13 +1,17 @@
 // SetupZeroKeyModal.tsx
 import React, { useState } from 'react';
 import StepProof from '@/components/StepProof';
-import Recap from '@/components/Recap';
+import Recap from '@/components/Recap/add';
 
 type SetupZeroKeyModalProps = {
+  safeAddress: string;
   onClose: () => void;
 };
 
-export default function SetupZeroKeyModal({ onClose }: SetupZeroKeyModalProps) {
+export default function SetupZeroKeyModal({
+  safeAddress,
+  onClose,
+}: SetupZeroKeyModalProps) {
   const [step, setStep] = useState(1);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -32,7 +36,6 @@ export default function SetupZeroKeyModal({ onClose }: SetupZeroKeyModalProps) {
   };
 
   const handleConfirm = () => {
-    console.log('ZeroKey setup completed', { selectedQuestions, answers });
     onClose();
   };
 
@@ -80,6 +83,7 @@ export default function SetupZeroKeyModal({ onClose }: SetupZeroKeyModalProps) {
             answers={answers}
             onConfirm={handleConfirm}
             onCancel={onClose}
+            safeAddress={safeAddress}
           />
         )}
       </div>

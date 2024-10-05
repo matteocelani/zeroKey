@@ -2,9 +2,18 @@ import Safe, {
   PredictedSafeProps,
   CreateTransactionProps,
 } from '@safe-global/protocol-kit';
-import { SafeTransaction } from '@safe-global/safe-core-sdk-types';
-// Importing Types & Interfaces
+import {
+  SafeTransaction,
+  TransactionResult as SafeCoreTransactionResult,
+} from '@safe-global/safe-core-sdk-types';
+import { TransactionResult as TypesKitTransactionResult } from '@safe-global/types-kit';
 import { Client } from 'viem';
+import { ethers } from 'ethers';
+// Importing Constants
+import { ZERO_CONTRACT_ADDRESS } from '@/lib/constants';
+
+type CombinedTransactionResult = SafeCoreTransactionResult &
+  TypesKitTransactionResult;
 
 export async function initSafe(
   connectorClient: Client,
@@ -127,5 +136,47 @@ export class SafeManager {
     };
 
     return this.safeWallet.createTransaction(safeTransactionData);
+  }
+
+  /* ------------------------------- Add Module ------------------------------- */
+
+  async addSecret(
+    smartAdress: string,
+    hash: string
+  ): Promise<CombinedTransactionResult> {
+    if (!this.safeWallet) {
+      throw new Error('Safe wallet not initialized');
+    }
+
+    const iface = new ethers.Interface([
+      'function enableModule(address module) public',
+      'function setHash(bytes32 hash) external',
+    ]);
+
+    const safeTransactionData: CreateTransactionProps = {
+      transactions: [
+        {
+          to: smartAdress,
+          value: '0',
+          data: iface.encodeFunctionData('enableModule', [
+            ZERO_CONTRACT_ADDRESS,
+          ]) as `0x${string}`,
+        },
+        {
+          to: ZERO_CONTRACT_ADDRESS,
+          value: '0',
+          data: iface.encodeFunctionData('setHash', [hash]) as `0x${string}`,
+        },
+      ],
+    };
+
+    const safeTransaction =
+      await this.safeWallet.createTransaction(safeTransactionData);
+    const signedSafeTransaction =
+      await this.safeWallet.signTransaction(safeTransaction);
+    const transactionsResult = await this.safeWallet.executeTransaction(
+      signedSafeTransaction
+    );
+    return transactionsResult as CombinedTransactionResult;
   }
 }
