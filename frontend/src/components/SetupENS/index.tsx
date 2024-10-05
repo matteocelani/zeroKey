@@ -1,26 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 // Importing Hooks
-import { useEnsAddress } from 'wagmi';
+import { useEnsAddress, useReadContract } from 'wagmi';
 // Import Icons
 import { CgSpinner } from 'react-icons/cg';
+// Import Utils
+import { parseUnits, formatEther } from 'viem';
 // Import Constants
 import { ENS_BASE } from '@/lib/constants';
+import { baseRegistrarController } from '@/lib/constants/wagmiContractConfig';
 
 type SetupENSProps = {
   onSkip: () => void;
-  onSetENS: (name: string) => void;
+  onSetENS: (name: string, duration: number) => void;
 };
 
 export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
   const [ensName, setEnsName] = useState('');
   const [isValidENS, setIsValidENS] = useState(false);
   const [isCheckingENS, setIsCheckingENS] = useState(false);
+  const [years, setYears] = useState(1);
 
   const fullEnsName = ensName ? `${ensName}${ENS_BASE}` : '';
 
   const { data: ensAddress, isLoading } = useEnsAddress({
     name: fullEnsName.includes('.') ? fullEnsName : undefined,
-    chainId: 1, // Mainnet for ENS resolution
+    chainId: 1,
+  });
+
+  const secondsPerYear = 365 * 24 * 60 * 60;
+  const durationInSeconds = years * secondsPerYear;
+
+  const { data: registerPrice } = useReadContract({
+    ...baseRegistrarController,
+    functionName: 'registerPrice',
+    args: ensName ? [ensName, BigInt(durationInSeconds)] : undefined,
   });
 
   useEffect(() => {
@@ -31,9 +44,17 @@ export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isValidENS) {
-      onSetENS(fullEnsName);
+      onSetENS(fullEnsName, years);
     }
   };
+
+  const incrementYears = () => setYears((y) => Math.min(y + 1, 10));
+  const decrementYears = () => setYears((y) => Math.max(y, 1));
+
+  const formattedPrice = useMemo(() => {
+    if (!registerPrice) return null;
+    return formatEther(registerPrice);
+  }, [registerPrice]);
 
   return (
     <div className="space-y-6">
@@ -71,6 +92,33 @@ export default function SetupENS({ onSkip, onSetENS }: SetupENSProps) {
             {isValidENS
               ? `${fullEnsName} is available!`
               : `${fullEnsName} is already taken.`}
+          </p>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-07 dark:text-03">Registration period:</span>
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={decrementYears}
+              className="px-2 py-1 bg-03 dark:bg-07 text-07 dark:text-03 rounded-l"
+            >
+              -
+            </button>
+            <span className="px-4 py-1 bg-02 dark:bg-08 text-07 dark:text-03">
+              {years} year{years !== 1 ? 's' : ''}
+            </span>
+            <button
+              type="button"
+              onClick={incrementYears}
+              className="px-2 py-1 bg-03 dark:bg-07 text-07 dark:text-03 rounded-r"
+            >
+              +
+            </button>
+          </div>
+        </div>
+        {registerPrice && (
+          <p className="text-sm text-07 dark:text-03">
+            Registration price: {formatEther(registerPrice)} ETH
           </p>
         )}
         <div className="flex justify-between">
