@@ -88,9 +88,11 @@ export default function SetupENS({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-07 dark:text-03">
-        Setup ENS Name (Optional)
-      </h3>
+      {isDeploy && (
+        <h3 className="text-lg font-semibold text-07 dark:text-03">
+          Setup ENS Name (Optional)
+        </h3>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="relative">
           <input

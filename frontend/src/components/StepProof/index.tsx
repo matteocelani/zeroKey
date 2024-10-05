@@ -13,6 +13,7 @@ type StepProofProps = {
   onPrevStep: () => void;
   onNextStep: () => void;
   onFinish: () => void;
+  isRecover?: boolean;
 };
 
 export default function StepProof({
@@ -24,6 +25,7 @@ export default function StepProof({
   onPrevStep,
   onNextStep,
   onFinish,
+  isRecover = false,
 }: StepProofProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,10 +41,12 @@ export default function StepProof({
     }
   };
 
+  const adjustedStep = isRecover ? step : step;
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-07 dark:text-03">
-        Proof {step}
+        Proof {adjustedStep}
       </h3>
       <div className="relative">
         <div
@@ -87,19 +91,26 @@ export default function StepProof({
         />
       )}
       <div className="flex justify-between">
-        <button
-          onClick={onPrevStep}
-          disabled={step === 0}
-          className="px-4 py-2 bg-03 dark:bg-07 text-07 dark:text-03 rounded-lg disabled:opacity-50 transition-colors"
-        >
-          Previous
-        </button>
+        {(isRecover || step > 1) && (
+          <button
+            onClick={onPrevStep}
+            className="px-4 py-2 bg-03 dark:bg-07 text-07 dark:text-03 rounded-lg transition-colors"
+          >
+            Previous
+          </button>
+        )}
         <button
           onClick={handleNextOrFinish}
           disabled={!selectedQuestions[step - 1] || !answers[step - 1]}
-          className="px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors"
+          className={`px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors ${
+            isRecover || step > 1 ? '' : 'ml-auto'
+          }`}
         >
-          {step === 3 ? 'Generate the Proof' : 'Next'}
+          {step === 3
+            ? isRecover
+              ? 'Generate the Proof'
+              : 'Generate Secret'
+            : 'Next'}
         </button>
       </div>
     </div>

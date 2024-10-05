@@ -155,7 +155,7 @@ export default function CreateAccountModal({
           )}
 
           {step === CreateAccountStep.SetupENS && (
-            <SetupENS onSkip={handleSkipENS} onSetENS={handleSetENS} />
+            <SetupENS onSkip={handleSkipENS} onSetENS={handleSetENS} isDeploy />
           )}
 
           {step === CreateAccountStep.Review && (
