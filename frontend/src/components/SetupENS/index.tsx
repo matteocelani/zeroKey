@@ -1,21 +1,33 @@
 import React, { useState, useEffect, useMemo } from 'react';
 // Importing Hooks
-import { useEnsAddress, useReadContract } from 'wagmi';
+import { useEnsAddress, useReadContract, useWriteContract } from 'wagmi';
 // Import Icons
 import { CgSpinner } from 'react-icons/cg';
 // Import Utils
 import { formatBalance } from '@/lib/utils/mathUtils';
 // Import Constants
 import { ENS_BASE } from '@/lib/constants';
-import { baseRegistrarController } from '@/lib/constants/wagmiContractConfig';
+import {
+  baseRegistrarController,
+  baseL2Resolver,
+} from '@/lib/constants/wagmiContractConfig';
+import {
+  namehash,
+  encodeAbiParameters,
+  encodeFunctionData,
+  getAddress,
+} from 'viem';
+import { ens_normalize } from '@adraffy/ens-normalize';
 
 type SetupENSProps = {
+  address: string;
   onSkip: () => void;
   onSetENS: (name: string, duration: number) => void;
   isDeploy?: boolean;
 };
 
 export default function SetupENS({
+  address,
   onSkip,
   onSetENS,
   isDeploy,
@@ -39,7 +51,7 @@ export default function SetupENS({
   const { data: registerPrice } = useReadContract({
     ...baseRegistrarController,
     functionName: 'registerPrice',
-    // @ts-expect-error - TS doesn't recognize number as a valid type for args
+    // @ts-ignore - TS doesn't recognize number as a valid type for args
     args: ensName.length >= 3 ? [ensName, durationInSeconds] : undefined,
   });
 
@@ -71,10 +83,48 @@ export default function SetupENS({
     }
   }, [ensName, ensAddress, isLoading]);
 
+  const { writeContract, isPending: isRegistering } = useWriteContract();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValidENS) {
-      onSetENS(fullEnsName, years);
+    if (isValidENS && registerPrice) {
+      const durationInSeconds = BigInt(years * 365 * 24 * 60 * 60);
+      const node = namehash(ens_normalize(`${ensName}${ENS_BASE}`));
+
+      // Encode setAddr function call
+      const setBaseAddrData = encodeFunctionData({
+        abi: baseL2Resolver.abi,
+        functionName: 'setAddr',
+        args: [node, BigInt(2147492101), getAddress(address)],
+      });
+
+      const setEthAddrData = encodeFunctionData({
+        abi: baseL2Resolver.abi,
+        functionName: 'setAddr',
+        args: [node, BigInt(60), getAddress(address)],
+      });
+
+      const registerRequest = {
+        name: ensName,
+        owner: address as `0x${string}`,
+        duration: durationInSeconds,
+        resolver: baseL2Resolver.address,
+        data: [setBaseAddrData, setEthAddrData],
+        reverseRecord: true,
+      };
+
+      try {
+        writeContract({
+          ...baseRegistrarController,
+          functionName: 'register',
+          args: [registerRequest],
+          value: registerPrice,
+        });
+        onSetENS(`${ensName}${ENS_BASE}`, years);
+      } catch (error) {
+        console.error('Error registering ENS:', error);
+        setError('Failed to register ENS. Please try again.');
+      }
     }
   };
 
@@ -163,13 +213,14 @@ export default function SetupENS({
           )}
           <button
             type="submit"
-            disabled={!isValidENS || isCheckingENS}
+            disabled={!isValidENS || isCheckingENS || isRegistering}
             className="px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors"
           >
-            Set ENS Name
+            {isRegistering ? 'Registering...' : 'Set ENS Name'}
           </button>
         </div>
       </form>
+      {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   );
 }

@@ -71,9 +71,7 @@ export default function Account({ address }: AccountProps) {
   const [activeModal, setActiveModal] = useState<
     'sendReceive' | 'setupENS' | 'setupZeroKey' | null
   >(null);
-  const [sendReceiveType, setSendReceiveType] = useState<'send' | 'receive'>(
-    'send'
-  );
+  const [sendReceiveType, setSendReceiveType] = useState<'send' | 'receive'>('send');
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
   const [proofStep, setProofStep] = useState(1);
@@ -84,22 +82,22 @@ export default function Account({ address }: AccountProps) {
     setSelectedQuestions([]);
     setAnswers([]);
   };
-
+  
   const handleQuestionSelect = (questionIndex: number, step: number) => {
     const newSelectedQuestions = [...selectedQuestions];
     newSelectedQuestions[step - 1] = questionIndex.toString();
     setSelectedQuestions(newSelectedQuestions);
   };
-
+  
   const handleAnswerChange = (answer: string, step: number) => {
     const newAnswers = [...answers];
     newAnswers[step - 1] = answer;
     setAnswers(newAnswers);
   };
-
+  
   const handleNextStep = () => setProofStep(proofStep + 1);
   const handlePrevStep = () => setProofStep(proofStep - 1);
-
+  
   const handleFinishProof = () => {
     // Implement ZeroKey setup logic here
     console.log('ZeroKey setup completed', { selectedQuestions, answers });
@@ -202,7 +200,9 @@ export default function Account({ address }: AccountProps) {
         />
       )}
 
-      {activeModal === 'setupENS' && <SetupENSModal onClose={closeModal} />}
+      {activeModal === 'setupENS' && (
+        <SetupENSModal address={address} onClose={closeModal} />
+      )}
 
       {activeModal === 'setupZeroKey' && (
         <SetupZeroKeyModal onClose={closeModal} />
