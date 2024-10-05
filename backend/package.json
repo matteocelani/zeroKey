@@ -1,16 +1,13 @@
 {
-  "name": "hackatonorj",
-  "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "hardhat-project",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.12"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
+    "@safe-global/protocol-kit": "^4.0.1",
+    "@safe-global/safe-core-sdk-types": "^5.1.0",
+    "dotenv": "^16.4.5",
     "zokrates-js": "^1.1.9"
   }
 }
