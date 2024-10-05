@@ -12,4 +12,4 @@ export const BASE_URL = 'https://safe-client.safe.global/v1';
 export const RESPONSE_STATUS_200 = 200;
 export const RESPONSE_STATUS_201 = 201;
 
-export const ENS_BASE = '.zerokey.eth';
+export const ENS_BASE = '.base.eth';
