@@ -186,6 +186,7 @@ export default function Zero() {
         onPrevStep={handlePrevStep}
         onNextStep={handleNextStep}
         onFinish={handleGenerateProof}
+        isRecover
       />
     );
   };
