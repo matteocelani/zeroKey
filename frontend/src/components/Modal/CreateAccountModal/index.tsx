@@ -97,7 +97,7 @@ export default function CreateAccountModal({
 
   return (
     <div
-      className="fixed inset-0 bg-09 bg-opacity-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-09 bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={handleOutsideClick}
     >
       <div

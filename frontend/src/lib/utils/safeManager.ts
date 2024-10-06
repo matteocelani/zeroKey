@@ -111,6 +111,31 @@ export class SafeManager {
     }
   }
 
+  async createAndExecuteTransaction(
+    to: string,
+    amount: string
+  ): Promise<CombinedTransactionResult> {
+    if (!this.safeWallet) {
+      throw new Error('Safe wallet not initialized');
+    }
+
+    // Create the transaction
+    const safeTransaction = await this.createNativeTokenTransfer(to, amount);
+    const signedSafeTransaction =
+      await this.safeWallet.signTransaction(safeTransaction);
+    const executeTxResponse = await this.safeWallet.executeTransaction(
+      signedSafeTransaction
+    );
+
+    return executeTxResponse as CombinedTransactionResult;
+  }
+
+  async waitForTransaction(
+    transactionResponse: ethers.TransactionResponse
+  ): Promise<void> {
+    await transactionResponse.wait();
+  }
+
   async isModuleEnabled(moduleAddress: string): Promise<boolean> {
     if (!this.safeWallet) {
       throw new Error('Safe wallet not initialized');

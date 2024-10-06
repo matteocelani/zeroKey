@@ -6,6 +6,9 @@ import Navbar from '@/layout/navbar';
 import Sidebar from '@/layout/sidebar';
 import Footer from '@/layout/footer';
 import ContentLock from '@/layout/lock';
+// Notifications
+import { Toaster } from "@/components/ui/sonner"
+
 
 export default function Layout({ children }: PropsWithChildren) {
   const { isConnecting, isConnected, isDisconnected } = useAccount();
@@ -32,6 +35,7 @@ export default function Layout({ children }: PropsWithChildren) {
       <Navbar isOpen={isSidebarOpen} toggleOpen={toggleSidebar} />
       <Sidebar isOpen={isSidebarOpen} toggleOpen={toggleSidebar} />
       <main className="main">{children}</main>
+      <Toaster />
       <Footer />
     </div>
   );

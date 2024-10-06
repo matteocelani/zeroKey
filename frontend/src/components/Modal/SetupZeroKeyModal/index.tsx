@@ -47,7 +47,7 @@ export default function SetupZeroKeyModal({
 
   return (
     <div
-      className="fixed inset-0 bg-09 bg-opacity-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-09 bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm"
       onClick={handleOutsideClick}
     >
       <div
