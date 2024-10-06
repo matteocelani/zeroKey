@@ -36,10 +36,6 @@ export default function SendReceiveModal({
   const [isCheckingENS, setIsCheckingENS] = useState(false);
   const [safeManager, setSafeManager] = useState<SafeManager | null>(null);
   const { data: walletClient } = useWalletClient();
-  const [transactionError, setTransactionError] = useState<string | null>(null);
-  const [transactionSuccess, setTransactionSuccess] = useState<string | null>(
-    null
-  );
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
@@ -127,14 +123,16 @@ export default function SendReceiveModal({
 
     // Show a pending toast
     const pendingToastId = toast.loading('Waiting for wallet confirmation...', {
-      className: 'bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md',
+      className:
+        'bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md',
     });
 
     // Set a timeout to dismiss the pending toast if the transaction is not sent
     const timeoutId = setTimeout(() => {
       toast.dismiss(pendingToastId);
       toast.error('Transaction was not confirmed in time. Please try again.', {
-        className: 'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
+        className:
+          'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
       });
       setIsSending(false);
     }, 60000); // 1 minute timeout
@@ -156,11 +154,14 @@ export default function SendReceiveModal({
       // Update the pending toast
       toast.loading('Transaction is being processed...', {
         id: pendingToastId,
-        className: 'bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md',
+        className:
+          'bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md',
       });
 
       // Wait for the transaction to be mined
-      await safeManager.waitForTransaction(transactionResult.transactionResponse);
+      await safeManager.waitForTransaction(
+        transactionResult.transactionResponse
+      );
 
       console.log('Transaction mined. Hash:', transactionResult.hash);
 
@@ -170,7 +171,8 @@ export default function SendReceiveModal({
         `Successfully sent ${amount} ETH to ${recipientAddr}.
         Transaction hash: ${transactionResult.hash}`,
         {
-          className: 'bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md',
+          className:
+            'bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md',
         }
       );
     } catch (error) {
@@ -180,7 +182,8 @@ export default function SendReceiveModal({
       console.error('Error sending transaction:', error);
       toast.dismiss(pendingToastId);
       toast.error('Failed to send transaction. Please try again.', {
-        className: 'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
+        className:
+          'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
       });
     } finally {
       setIsSending(false);

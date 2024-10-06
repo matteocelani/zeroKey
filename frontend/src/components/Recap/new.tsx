@@ -15,6 +15,12 @@ import { serializeQuestionsAndAnswers } from '@/lib/utils/secretUtils';
 import { SECURITY_QUESTIONS } from '@/lib/constants/questions';
 import { ZERO_CONTRACT_ADDRESS } from '@/lib/constants';
 
+type SimpleCall = {
+  to: string;
+  value: bigint;
+  data: `0x${string}`;
+};
+
 type RecapProps = {
   selectedQuestions: string[];
   answers: string[];
@@ -79,7 +85,6 @@ export default function Recap({
           address: entryPoint07Address,
           version: '0.7',
         },
-        // @ts-expect-error - Viem type not return a Eip1193Provider
         owners: [connectorClient],
         saltNonce: BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)),
         version: '1.4.1',
@@ -104,21 +109,23 @@ export default function Recap({
       ]);
 
       // Send a transaction to register the account on the blockchain
+      const calls: SimpleCall[] = [
+        {
+          to: smartAccountClient.account.address,
+          value: parseEther('0'),
+          data: iface.encodeFunctionData('enableModule', [
+            ZERO_CONTRACT_ADDRESS,
+          ]) as `0x${string}`,
+        },
+        {
+          to: ZERO_CONTRACT_ADDRESS,
+          value: parseEther('0'),
+          data: iface.encodeFunctionData('setHash', [hash]) as `0x${string}`,
+        },
+      ];
+
       await smartAccountClient.sendUserOperation({
-        calls: [
-          {
-            to: smartAccountClient.account.address,
-            value: parseEther('0'),
-            data: iface.encodeFunctionData('enableModule', [
-              ZERO_CONTRACT_ADDRESS,
-            ]) as `0x${string}`,
-          },
-          {
-            to: ZERO_CONTRACT_ADDRESS,
-            value: parseEther('0'),
-            data: iface.encodeFunctionData('setHash', [hash]) as `0x${string}`,
-          },
-        ],
+        calls: calls,
       });
 
       onConfirm();

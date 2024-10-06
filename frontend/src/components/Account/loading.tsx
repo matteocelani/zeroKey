@@ -6,7 +6,7 @@ import { FaEthereum } from 'react-icons/fa';
 
 export default function AccountLoading() {
   return (
-    <div className="max-w-2xl mx-auto bg-01 dark:bg-08 rounded-lg px-4 py-3 shadow-md animate-pulse">
+    <div className="max-w-2xl mx-auto bg-01 dark:bg-08 rounded-lg px-4 py-3 shadow-md animate-pulse mb-4">
       <div className="flex flex-col md:flex-row items-center justify-between">
         <div className="flex items-center w-full md:w-auto mb-4 md:mb-0">
           <div className="w-14 h-14 flex-shrink-0 mr-4 bg-03 dark:bg-07 rounded-full"></div>

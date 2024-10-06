@@ -2,20 +2,24 @@ import Safe, {
   PredictedSafeProps,
   CreateTransactionProps,
 } from '@safe-global/protocol-kit';
-import { SafeTransaction } from '@safe-global/safe-core-sdk-types';
-// Importing Types & Interfaces
+import {
+  SafeTransaction,
+  TransactionResult as SafeCoreTransactionResult,
+} from '@safe-global/safe-core-sdk-types';
+import { TransactionResult as TypesKitTransactionResult } from '@safe-global/types-kit';
 import { Client } from 'viem';
 import { ethers } from 'ethers';
+// Importing Constants
+import { ZERO_CONTRACT_ADDRESS } from '@/lib/constants';
 
-interface CombinedTransactionResult {
-  hash: string;
-  transactionResponse: ethers.TransactionResponse;
-}
+type CombinedTransactionResult = SafeCoreTransactionResult &
+  TypesKitTransactionResult;
 
 export async function initSafe(
   connectorClient: Client,
   saltNonce: string
 ): Promise<Safe> {
+  // @ts-expect-error - Viem give me Never
   if (!connectorClient || !connectorClient.account) {
     console.error('No connector client or account found');
     throw new Error('no connector client or account found');
@@ -24,6 +28,7 @@ export async function initSafe(
   try {
     const predictedSafe: PredictedSafeProps = {
       safeAccountConfig: {
+        // @ts-expect-error - Viem give me Never
         owners: [connectorClient.account.address],
         threshold: 1,
       },
@@ -34,8 +39,8 @@ export async function initSafe(
     };
 
     const safe = await Safe.init({
-      // @ts-expect-error - Viem type not return a Eip1193Provider
       provider: connectorClient,
+      // @ts-expect-error - Viem give me Never
       signer: connectorClient.account.address,
       predictedSafe,
     });
@@ -52,6 +57,7 @@ export async function initSafeManager(
   connectorClient: Client,
   safeAddress: string
 ): Promise<Safe> {
+  // @ts-expect-error - Viem give me Never
   if (!connectorClient || !connectorClient.account) {
     console.error('No connector client or account found');
     throw new Error('no connector client or account found');
@@ -59,8 +65,8 @@ export async function initSafeManager(
 
   try {
     let safe = await Safe.init({
-      // @ts-expect-error - Viem type not return a Eip1193Provider
       provider: connectorClient,
+      // @ts-expect-error - Viem give me Never
       signer: connectorClient.account.address,
       safeAddress,
     });
@@ -81,6 +87,7 @@ export class SafeManager {
     wallet: string,
     connectorClient: Client
   ): Promise<boolean> {
+    // @ts-expect-error - Viem give me Never
     if (!connectorClient || !connectorClient.account) {
       console.error('No connector client or account found');
       return false;
@@ -88,8 +95,8 @@ export class SafeManager {
 
     try {
       this.safeWallet = await Safe.init({
-        // @ts-expect-error - Viem type not return a Eip1193Provider
         provider: connectorClient,
+        // @ts-expect-error - Viem give me Never
         signer: connectorClient.account.address,
         safeAddress: wallet,
       });
@@ -102,6 +109,31 @@ export class SafeManager {
       console.error('An error occurred during wallet initialization:', error);
       return false;
     }
+  }
+
+  async createAndExecuteTransaction(
+    to: string,
+    amount: string
+  ): Promise<CombinedTransactionResult> {
+    if (!this.safeWallet) {
+      throw new Error('Safe wallet not initialized');
+    }
+
+    // Create the transaction
+    const safeTransaction = await this.createNativeTokenTransfer(to, amount);
+    const signedSafeTransaction =
+      await this.safeWallet.signTransaction(safeTransaction);
+    const executeTxResponse = await this.safeWallet.executeTransaction(
+      signedSafeTransaction
+    );
+
+    return executeTxResponse as CombinedTransactionResult;
+  }
+
+  async waitForTransaction(
+    transactionResponse: ethers.TransactionResponse
+  ): Promise<void> {
+    await transactionResponse.wait();
   }
 
   async isModuleEnabled(moduleAddress: string): Promise<boolean> {
@@ -135,28 +167,64 @@ export class SafeManager {
     return this.safeWallet.createTransaction(safeTransactionData);
   }
 
-  async createAndExecuteTransaction(
-    to: string,
-    amount: string
+  /* ------------------------------- Add Module ------------------------------- */
+
+  async addSecret(
+    smartAdress: string,
+    hash: string
   ): Promise<CombinedTransactionResult> {
     if (!this.safeWallet) {
       throw new Error('Safe wallet not initialized');
     }
 
-    // Create the transaction
-    const safeTransaction = await this.createNativeTokenTransfer(to, amount);
+    const iface = new ethers.Interface([
+      'function enableModule(address module) public',
+      'function setHash(bytes32 hash) external',
+    ]);
+
+    const safeTransactionData: CreateTransactionProps = {
+      transactions: [
+        {
+          to: smartAdress,
+          value: '0',
+          data: iface.encodeFunctionData('enableModule', [
+            ZERO_CONTRACT_ADDRESS,
+          ]) as `0x${string}`,
+        },
+        {
+          to: ZERO_CONTRACT_ADDRESS,
+          value: '0',
+          data: iface.encodeFunctionData('setHash', [hash]) as `0x${string}`,
+        },
+      ],
+    };
+
+    const safeTransaction =
+      await this.safeWallet.createTransaction(safeTransactionData);
     const signedSafeTransaction =
       await this.safeWallet.signTransaction(safeTransaction);
-    const executeTxResponse = await this.safeWallet.executeTransaction(
+    const transactionsResult = await this.safeWallet.executeTransaction(
       signedSafeTransaction
     );
-
-    return executeTxResponse as CombinedTransactionResult;
+    return transactionsResult as CombinedTransactionResult;
   }
 
-  async waitForTransaction(
-    transactionResponse: ethers.TransactionResponse
-  ): Promise<void> {
-    await transactionResponse.wait();
+  /* -------------------------------------------------------------------------- */
+  /*                                  Get Owner                                 */
+  /* -------------------------------------------------------------------------- */
+
+  async createSwapOwnerTx(newOwner: string): Promise<SafeTransaction> {
+    if (!this.safeWallet) {
+      throw new Error('Safe wallet not initialized');
+    }
+
+    const oldOwners = await this.safeWallet.getOwners();
+
+    console.log('oldOwners', oldOwners);
+
+    return this.safeWallet.createSwapOwnerTx({
+      oldOwnerAddress: oldOwners[0],
+      newOwnerAddress: newOwner,
+    });
   }
 }

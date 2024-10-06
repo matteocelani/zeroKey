@@ -15,6 +15,7 @@ import {
   generateProof,
   serializeQuestionsAndAnswers,
 } from '@/lib/utils/secretUtils';
+import { Proof } from 'zokrates-js';
 
 export default function Zero() {
   const { address: adr } = useAccount();
@@ -23,7 +24,7 @@ export default function Zero() {
   const [step, setStep] = useState(0);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>(['', '', '']);
-  const [proofString, setProofString] = useState('');
+  const [proofString, setProofString] = useState<Proof | undefined>();
   const [address, setAddress] = useState('');
   const [isValidRecipient, setIsValidRecipient] = useState(false);
   const [isCheckingENS, setIsCheckingENS] = useState(false);
@@ -113,8 +114,8 @@ export default function Zero() {
         selectedQuestions,
         answers
       );
-      const proof = await generateProof(concatenated, adr);
-      setProofString(JSON.stringify(proof));
+      const proof = await generateProof(concatenated, adr.toLocaleLowerCase());
+      setProofString(proof);
       setProofGenerated(true);
     } catch (error) {
       console.error('Error generating proof:', error);
@@ -182,9 +183,12 @@ export default function Zero() {
     if (proofGenerated) {
       const resolvedAddress = ensAddress || address;
       return activeTab === 'send' ? (
-        <SendInterface address={resolvedAddress} proofString={proofString} />
+        <SendInterface address={resolvedAddress} proof={proofString} />
       ) : (
-        <RecoverInterface address={resolvedAddress} proofString={proofString} />
+        <RecoverInterface
+          recoverAddress={resolvedAddress}
+          proof={proofString}
+        />
       );
     }
 

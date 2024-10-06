@@ -15,4 +15,4 @@ export const RESPONSE_STATUS_201 = 201;
 export const ENS_BASE = '.base.eth';
 
 export const ZERO_CONTRACT_ADDRESS =
-  '0xEa54f4320f50289d1C32339bd158BBbdD2bf1521';
+  '0x2f06DAd8675AdA13e5124eD8B593876a8fad9d99';

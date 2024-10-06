@@ -34,20 +34,18 @@ export default function Dashboard() {
             Create Account
           </button>
         </div>
-        <div className="space-y-4">
-          {isLoading ? (
-            Array(4)
-              .fill(null)
-              .map((_, index) => <AccountLoading key={index} />)
-          ) : (
-            <>
-              {safes &&
-                safes.map((safeAddress) => (
-                  <Account key={safeAddress} address={safeAddress} />
-                ))}
-            </>
-          )}
-        </div>
+        {isLoading ? (
+          Array(4)
+            .fill(null)
+            .map((_, index) => <AccountLoading key={index} />)
+        ) : (
+          <>
+            {safes &&
+              safes.map((safeAddress) => (
+                <Account key={safeAddress} address={safeAddress} />
+              ))}
+          </>
+        )}
       </div>
 
       {isCreateModalOpen && (

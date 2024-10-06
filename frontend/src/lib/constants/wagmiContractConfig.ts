@@ -1496,3 +1496,94 @@ export const baseL2Resolver = {
     },
   ],
 } as const;
+
+export const zeroKeyModule = {
+  address: '0x2f06DAd8675AdA13e5124eD8B593876a8fad9d99',
+  abi: [
+    {
+      inputs: [{ internalType: 'address', name: '_verifier', type: 'address' }],
+      stateMutability: 'nonpayable',
+      type: 'constructor',
+    },
+    { inputs: [], name: 'InvalidHash', type: 'error' },
+    { inputs: [], name: 'InvalidProof', type: 'error' },
+    { inputs: [], name: 'InvalidSender', type: 'error' },
+    {
+      inputs: [
+        { internalType: 'address', name: 'wallet', type: 'address' },
+        {
+          components: [
+            { internalType: 'address', name: 'to', type: 'address' },
+            { internalType: 'uint256', name: 'value', type: 'uint256' },
+            { internalType: 'bytes', name: 'callData', type: 'bytes' },
+          ],
+          internalType: 'struct ZeroKeyModule.Transaction',
+          name: 'transaction',
+          type: 'tuple',
+        },
+        {
+          components: [
+            {
+              components: [
+                { internalType: 'uint256', name: 'X', type: 'uint256' },
+                { internalType: 'uint256', name: 'Y', type: 'uint256' },
+              ],
+              internalType: 'struct IVerifier.G1Point',
+              name: 'a',
+              type: 'tuple',
+            },
+            {
+              components: [
+                { internalType: 'uint256[2]', name: 'X', type: 'uint256[2]' },
+                { internalType: 'uint256[2]', name: 'Y', type: 'uint256[2]' },
+              ],
+              internalType: 'struct IVerifier.G2Point',
+              name: 'b',
+              type: 'tuple',
+            },
+            {
+              components: [
+                { internalType: 'uint256', name: 'X', type: 'uint256' },
+                { internalType: 'uint256', name: 'Y', type: 'uint256' },
+              ],
+              internalType: 'struct IVerifier.G1Point',
+              name: 'c',
+              type: 'tuple',
+            },
+          ],
+          internalType: 'struct IVerifier.Proof',
+          name: 'proof',
+          type: 'tuple',
+        },
+        { internalType: 'uint256[4]', name: 'input', type: 'uint256[4]' },
+      ],
+      name: 'executeTransactionWithProof',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'address', name: 'wallet', type: 'address' }],
+      name: 'getHash',
+      outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'bytes32', name: 'hash', type: 'bytes32' }],
+      name: 'setHash',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'verifier',
+      outputs: [
+        { internalType: 'contract IVerifier', name: '', type: 'address' },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+  ],
+} as const;
