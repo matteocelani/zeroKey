@@ -22,6 +22,14 @@ type SendReceiveModalProps = {
   initialTab: 'send' | 'receive';
 };
 
+interface TransactionResult {
+  hash: string;
+  transactionResponse: {
+    wait: () => Promise<any>;
+  };
+}
+
+
 export default function SendReceiveModal({
   address,
   onClose,
@@ -144,7 +152,7 @@ export default function SendReceiveModal({
       const transactionResult = await safeManager.createAndExecuteTransaction(
         recipientAddr,
         amountInWei.toString()
-      );
+      ) as TransactionResult;
 
       // Clear the timeout as the transaction was sent
       clearTimeout(timeoutId);
@@ -159,9 +167,7 @@ export default function SendReceiveModal({
       });
 
       // Wait for the transaction to be mined
-      await safeManager.waitForTransaction(
-        transactionResult.transactionResponse
-      );
+      await transactionResult.transactionResponse.wait();
 
       console.log('Transaction mined. Hash:', transactionResult.hash);
 

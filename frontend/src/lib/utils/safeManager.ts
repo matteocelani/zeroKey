@@ -19,7 +19,6 @@ export async function initSafe(
   connectorClient: Client,
   saltNonce: string
 ): Promise<Safe> {
-  // @ts-expect-error - Viem give me Never
   if (!connectorClient || !connectorClient.account) {
     console.error('No connector client or account found');
     throw new Error('no connector client or account found');
@@ -28,7 +27,6 @@ export async function initSafe(
   try {
     const predictedSafe: PredictedSafeProps = {
       safeAccountConfig: {
-        // @ts-expect-error - Viem give me Never
         owners: [connectorClient.account.address],
         threshold: 1,
       },
@@ -39,8 +37,8 @@ export async function initSafe(
     };
 
     const safe = await Safe.init({
-      provider: connectorClient,
       // @ts-expect-error - Viem give me Never
+      provider: connectorClient,
       signer: connectorClient.account.address,
       predictedSafe,
     });
@@ -57,7 +55,6 @@ export async function initSafeManager(
   connectorClient: Client,
   safeAddress: string
 ): Promise<Safe> {
-  // @ts-expect-error - Viem give me Never
   if (!connectorClient || !connectorClient.account) {
     console.error('No connector client or account found');
     throw new Error('no connector client or account found');
@@ -65,8 +62,8 @@ export async function initSafeManager(
 
   try {
     let safe = await Safe.init({
-      provider: connectorClient,
       // @ts-expect-error - Viem give me Never
+      provider: connectorClient,
       signer: connectorClient.account.address,
       safeAddress,
     });
@@ -87,7 +84,6 @@ export class SafeManager {
     wallet: string,
     connectorClient: Client
   ): Promise<boolean> {
-    // @ts-expect-error - Viem give me Never
     if (!connectorClient || !connectorClient.account) {
       console.error('No connector client or account found');
       return false;
@@ -95,8 +91,8 @@ export class SafeManager {
 
     try {
       this.safeWallet = await Safe.init({
-        provider: connectorClient,
         // @ts-expect-error - Viem give me Never
+        provider: connectorClient,
         signer: connectorClient.account.address,
         safeAddress: wallet,
       });
