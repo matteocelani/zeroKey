@@ -216,7 +216,7 @@ export default function SendReceiveModal({
       onClick={handleOutsideClick}
     >
       <div
-        className="bg-01 dark:bg-09 rounded-lg p-4 w-full max-w-md max-h-[90vh] overflow-y-auto"
+        className="bg-01 dark:bg-09 rounded-lg p-4 w-full max-w-md max-h-[90vh] overflow-y-visible"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
