@@ -18,6 +18,8 @@ import {
   baseRegistrarController,
   baseL2Resolver,
 } from '@/lib/constants/wagmiContractConfig';
+// Import Toast
+import { toast } from 'sonner';
 
 type SetupENSModalProps = {
   address: string;
@@ -55,6 +57,18 @@ export default function SetupENSModal({
     // @ts-expect-error - TS doesn't recognize number as a valid type for args
     args: ensName.length >= 3 ? [ensName, durationInSeconds] : undefined,
   });
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('ENS registration successful!', {
+        className:
+          'bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md',
+      });
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    }
+  }, [isSuccess, onClose]);
 
   useEffect(() => {
     setIsCheckingENS(ensName.length >= 3);
@@ -128,6 +142,10 @@ export default function SetupENSModal({
       } catch (error) {
         console.error('Error registering ENS:', error);
         setError('Failed to register ENS. Please try again.');
+        toast.error('Failed to register ENS. Please try again.', {
+          className:
+            'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
+        });
       }
     }
   };
@@ -225,22 +243,13 @@ export default function SetupENSModal({
                 Registration price: {formattedPrice} ETH
               </p>
             )}
-            {!isSuccess ? (
-              <button
-                onClick={handleRegister}
-                disabled={!isValidENS || isCheckingENS || isRegistering}
-                className="w-full px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors"
-              >
-                {isRegistering ? 'Registering...' : 'Set ENS Name'}
-              </button>
-            ) : (
-              <button
-                disabled
-                className="w-full px-4 py-2 bg-success text-white rounded-lg cursor-not-allowed"
-              >
-                ENS registration successful! This window will close shortly.
-              </button>
-            )}
+            <button
+              onClick={handleRegister}
+              disabled={!isValidENS || isCheckingENS || isRegistering}
+              className="w-full px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 transition-colors"
+            >
+              {isRegistering ? 'Registering...' : 'Set ENS Name'}
+            </button>
           </div>
         </div>
       </div>

@@ -7,6 +7,8 @@ import { generateHash } from '@/lib/utils/secretUtils';
 import { serializeQuestionsAndAnswers } from '@/lib/utils/secretUtils';
 // Importing Constants
 import { SECURITY_QUESTIONS } from '@/lib/constants/questions';
+// Importing Toast
+import { toast } from 'sonner';
 
 type RecapProps = {
   selectedQuestions: string[];
@@ -31,11 +33,20 @@ export default function Recap({
   const createSmartAccount = async () => {
     if (!address || !connectorClient) {
       setError('Wallet not connected');
+      toast.error('Wallet not connected', {
+        className:
+          'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
+      });
       return;
     }
 
     setIsCreatingAccount(true);
     setError(null);
+
+    const pendingToastId = toast.loading('Creating smart account...', {
+      className:
+        'bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md',
+    });
 
     try {
       const serialized = serializeQuestionsAndAnswers(
@@ -51,6 +62,11 @@ export default function Recap({
       // Create transaction to add secret
       await safeManager.addSecret(safeAddress, hash);
 
+      toast.dismiss(pendingToastId);
+      toast.success('Smart account created successfully!', {
+        className:
+          'bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md',
+      });
       onConfirm();
     } catch (err) {
       console.error(
@@ -60,6 +76,11 @@ export default function Recap({
       setError(
         'Failed to create smart account or send transaction. Please try again.'
       );
+      toast.dismiss(pendingToastId);
+      toast.error('Failed to create smart account. Please try again.', {
+        className:
+          'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
+      });
     } finally {
       setIsCreatingAccount(false);
     }
