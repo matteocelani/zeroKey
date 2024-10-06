@@ -143,12 +143,6 @@ export class SafeManager {
       throw new Error('Safe wallet not initialized');
     }
 
-    const safeTransactionData = {
-      to,
-      value: amount,
-      data: '0x',
-    };
-
     // Create the transaction
     const safeTransaction = await this.createNativeTokenTransfer(to, amount);
     const signedSafeTransaction =
