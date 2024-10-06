@@ -1,31 +1,44 @@
 import React, { useState, useEffect } from 'react';
 // Importing Hooks
-import { useBalance, useEnsAddress, useEnsName } from 'wagmi';
+import {
+  useBalance,
+  useEnsAddress,
+  useEnsName,
+  useAccount,
+  useConnectorClient,
+  useWriteContract,
+} from 'wagmi';
 // Importing Utils
-import { formatEther } from 'viem';
+import { toast } from 'sonner';
+import { formatEther, parseEther } from 'viem';
 import { isValidAddress } from '@/lib/utils/addressUtils';
 import { formatBalance } from '@/lib/utils/mathUtils';
+import { zeroKeyModule } from '@/lib/constants/wagmiContractConfig';
 // Importing Icons
 import { CgSpinner } from 'react-icons/cg';
 import { MdDone, MdClose } from 'react-icons/md';
 // Safe Manager
 import { SafeManager } from '@/lib/utils/safeManager';
 import { useWalletClient } from 'wagmi';
+import { Proof } from 'zokrates-js';
 
 type SendInterfaceProps = {
-  address: string;
-  proofString: string;
+  recoverAddress: string;
+  proof: Proof;
 };
 
 export default function SendInterface({
-  address,
-  proofString,
+  recoverAddress,
+  proof,
 }: SendInterfaceProps) {
   const [amount, setAmount] = useState('');
   const [recipientAddress, setRecipientAddress] = useState('');
   const [isValidRecipient, setIsValidRecipient] = useState(false);
   const [isCheckingENS, setIsCheckingENS] = useState(false);
   const { data: walletClient } = useWalletClient();
+  const { data: connectorClient } = useConnectorClient();
+  const { address } = useAccount();
+  const { writeContract } = useWriteContract();
 
   useEffect(() => {
     async function initializeSafeManager() {
@@ -38,7 +51,7 @@ export default function SendInterface({
   }, [address, walletClient]);
 
   const { data: balance, isLoading: isLoadingBalance } = useBalance({
-    address: address as `0x${string}`,
+    address: recoverAddress as `0x${string}`,
     chainId: 8453, // Base network
   });
 
@@ -104,13 +117,42 @@ export default function SendInterface({
     }
   };
 
-  const handleSend = () => {
-    console.log('Preparing to send transaction:');
-    console.log('From:', address);
-    console.log('To:', ensAddress || recipientAddress);
-    console.log('Amount:', amount, 'ETH');
-    console.log('Proof string:', proofString);
+  const handleSend = async () => {
+    if (!address || !connectorClient) {
+      toast.error('Wallet not connected');
+      return;
+    }
+
+    try {
+      const tx = {
+        to: (ensAddress || recipientAddress) as `0x${string}`,
+        value: parseEther(amount),
+        callData: '0x',
+      };
+
+      if (!proof.proof || !proof.inputs) {
+        throw new Error('Proof or inputs missing');
+      }
+
+      await writeContract({
+        ...zeroKeyModule,
+        functionName: 'executeTransactionWithProof',
+        // @ts-expect-error - TS doesn't recognize number as a valid type for args
+        args: [recoverAddress, tx, proof.proof, proof.inputs],
+      });
+
+      // The transaction has been submitted successfully if we reach this point
+      toast.info('Transaction submitted', {
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error('Error submitting transaction: ' + (error as Error).message, {
+        duration: 5000,
+      });
+    }
   };
+  X;
 
   const isReadyToSend = Boolean(
     address &&

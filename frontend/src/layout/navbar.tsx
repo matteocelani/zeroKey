@@ -33,6 +33,14 @@ export default function NavBar({ isOpen, toggleOpen }: NavigationProps) {
 
         <div className="hidden md:flex items-center space-x-6">
           {isConnected && <ConnectButton />}
+          {isConnected && (
+            <Link
+              href="/zero"
+              className="flex items-center justify-center text-sm sm:text-base px-3 sm:px-4 py-2 rounded-lg bg-primary text-white font-medium transition-colors hover:bg-primary/90"
+            >
+              Zero Transactions
+            </Link>
+          )}
           <ThemeSwitch />
         </div>
 

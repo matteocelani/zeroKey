@@ -1,17 +1,15 @@
-import React from 'react';
-// Importing Hooks
+import React, { useEffect } from 'react';
 import {
   useAccount,
   useConnectorClient,
   useWriteContract,
   useTransaction,
 } from 'wagmi';
-// Importing Utils
+import { toast } from 'sonner';
 import { parseEther } from 'viem';
 import { SafeManager } from '@/lib/utils/safeManager';
-// Importing Constants
+import { getShortAddress } from '@/lib/utils/addressUtils';
 import { zeroKeyModule } from '@/lib/constants/wagmiContractConfig';
-// Importing Types
 import { Proof } from 'zokrates-js';
 
 type RecoverInterfaceProps = {
@@ -28,9 +26,28 @@ export default function RecoverInterface({
   const { isLoading: isRegistering, isSuccess } = useTransaction({
     hash: hash as `0x${string}` | undefined,
   });
-
   const { data: connectorClient } = useConnectorClient();
   const { address } = useAccount();
+
+  useEffect(() => {
+    if (isRegistering) {
+      const toastId = toast.loading('Transaction in progress...');
+
+      // Close the toast after 5 seconds
+      setTimeout(() => {
+        toast.dismiss(toastId);
+      }, 5000);
+    }
+
+    if (isSuccess) {
+      const toastId = toast.success('Transaction successful!');
+
+      // Close the success toast after 3 seconds
+      setTimeout(() => {
+        toast.dismiss(toastId);
+      }, 3000);
+    }
+  }, [isRegistering, isSuccess]);
 
   const handleRecover = async () => {
     if (!address || !connectorClient) {
@@ -38,11 +55,9 @@ export default function RecoverInterface({
     }
 
     try {
-      // Initialize Safe manager
       const safeManager = new SafeManager();
       await safeManager.initializeWallet(recoverAddress, connectorClient);
 
-      // Create transaction to swap owner
       const safeTransaction = await safeManager.createSwapOwnerTx(address);
 
       const tx = {
@@ -61,20 +76,34 @@ export default function RecoverInterface({
         // @ts-expect-error - TS doesn't recognize number as a valid type for args
         args: [recoverAddress, tx, proof.proof, proof.inputs],
       });
+
+      toast.info('Transaction submitted');
     } catch (error) {
       console.error(error);
+      toast.error('Error submitting transaction');
     }
   };
 
   return (
     <div className="space-y-4">
-      <p className="text-07 dark:text-03">Ready to recover: {recoverAddress}</p>
-      <p className="text-07 dark:text-03">New Owner: {address}</p>
+      <p className="text-07 dark:text-03 hidden md:block">
+        Recover address: {recoverAddress}
+      </p>
+      <p className="text-07 dark:text-03 md:hidden">
+        Recover address: {getShortAddress(recoverAddress)}
+      </p>
+      <p className="text-07 dark:text-03 hidden md:block">
+        New Owner: {address}
+      </p>
+      <p className="text-07 dark:text-03 md:hidden">
+        New Owner: {getShortAddress(address)}
+      </p>
       <button
         onClick={handleRecover}
         className="w-full px-4 py-2 bg-info text-white rounded-lg"
+        disabled={isRegistering}
       >
-        Recover Account
+        {isRegistering ? 'Recovering...' : 'Recover Account'}
       </button>
     </div>
   );

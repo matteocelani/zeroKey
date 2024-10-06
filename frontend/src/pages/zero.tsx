@@ -183,7 +183,7 @@ export default function Zero() {
     if (proofGenerated) {
       const resolvedAddress = ensAddress || address;
       return activeTab === 'send' ? (
-        <SendInterface address={resolvedAddress} proof={proofString} />
+        <SendInterface recoverAddress={resolvedAddress} proof={proofString} />
       ) : (
         <RecoverInterface
           recoverAddress={resolvedAddress}
@@ -229,7 +229,7 @@ export default function Zero() {
                   : 'text-07 dark:text-03 hover:bg-03 dark:hover:bg-06'
               }`}
             >
-              Send
+              Withdraw
             </button>
             <button
               onClick={() => handleTabChange('recovery')}
@@ -247,7 +247,9 @@ export default function Zero() {
         <div className="max-w-2xl mx-auto bg-02 dark:bg-08 rounded-lg shadow-lg p-6 md:p-8 transition-all duration-300">
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-bold mb-4 text-07 dark:text-03">
-              {activeTab === 'send' ? 'Send Funds' : 'Recover Smart Account'}
+              {activeTab === 'send'
+                ? 'Withdraw Funds'
+                : 'Recover Smart Account'}
             </h2>
             {renderContent()}
           </div>
