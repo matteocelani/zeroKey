@@ -19,6 +19,7 @@ export async function initSafe(
   connectorClient: Client,
   saltNonce: string
 ): Promise<Safe> {
+  // @ts-expect-error - Viem give me Never
   if (!connectorClient || !connectorClient.account) {
     console.error('No connector client or account found');
     throw new Error('no connector client or account found');
@@ -27,6 +28,7 @@ export async function initSafe(
   try {
     const predictedSafe: PredictedSafeProps = {
       safeAccountConfig: {
+        // @ts-expect-error - Viem give me Never
         owners: [connectorClient.account.address],
         threshold: 1,
       },
@@ -37,8 +39,8 @@ export async function initSafe(
     };
 
     const safe = await Safe.init({
-      // @ts-expect-error - Viem type not return a Eip1193Provider
       provider: connectorClient,
+      // @ts-expect-error - Viem give me Never
       signer: connectorClient.account.address,
       predictedSafe,
     });
@@ -55,6 +57,7 @@ export async function initSafeManager(
   connectorClient: Client,
   safeAddress: string
 ): Promise<Safe> {
+  // @ts-expect-error - Viem give me Never
   if (!connectorClient || !connectorClient.account) {
     console.error('No connector client or account found');
     throw new Error('no connector client or account found');
@@ -62,8 +65,8 @@ export async function initSafeManager(
 
   try {
     let safe = await Safe.init({
-      // @ts-expect-error - Viem type not return a Eip1193Provider
       provider: connectorClient,
+      // @ts-expect-error - Viem give me Never
       signer: connectorClient.account.address,
       safeAddress,
     });
@@ -84,6 +87,7 @@ export class SafeManager {
     wallet: string,
     connectorClient: Client
   ): Promise<boolean> {
+    // @ts-expect-error - Viem give me Never
     if (!connectorClient || !connectorClient.account) {
       console.error('No connector client or account found');
       return false;
@@ -91,8 +95,8 @@ export class SafeManager {
 
     try {
       this.safeWallet = await Safe.init({
-        // @ts-expect-error - Viem type not return a Eip1193Provider
         provider: connectorClient,
+        // @ts-expect-error - Viem give me Never
         signer: connectorClient.account.address,
         safeAddress: wallet,
       });
@@ -178,5 +182,24 @@ export class SafeManager {
       signedSafeTransaction
     );
     return transactionsResult as CombinedTransactionResult;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  Get Owner                                 */
+  /* -------------------------------------------------------------------------- */
+
+  async createSwapOwnerTx(newOwner: string): Promise<SafeTransaction> {
+    if (!this.safeWallet) {
+      throw new Error('Safe wallet not initialized');
+    }
+
+    const oldOwners = await this.safeWallet.getOwners();
+
+    console.log('oldOwners', oldOwners);
+
+    return this.safeWallet.createSwapOwnerTx({
+      oldOwnerAddress: oldOwners[0],
+      newOwnerAddress: newOwner,
+    });
   }
 }
