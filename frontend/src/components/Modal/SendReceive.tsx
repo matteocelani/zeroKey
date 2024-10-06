@@ -11,7 +11,7 @@ import { isValidAddress } from '@/lib/utils/addressUtils';
 import { CgSpinner } from 'react-icons/cg';
 import { MdDone, MdClose } from 'react-icons/md';
 // Safe Manager
-import { SafeManager, initSafeManager } from '@/lib/utils/safeManager';
+import { SafeManager } from '@/lib/utils/safeManager';
 import { parseEther } from 'viem';
 import { useWalletClient } from 'wagmi';
 import { toast } from 'sonner';
@@ -204,7 +204,7 @@ export default function SendReceiveModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm"
       onClick={handleOutsideClick}
     >
       <div
