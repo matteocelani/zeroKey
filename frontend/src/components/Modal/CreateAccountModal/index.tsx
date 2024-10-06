@@ -101,7 +101,7 @@ export default function CreateAccountModal({
       onClick={handleOutsideClick}
     >
       <div
-        className="bg-01 dark:bg-09 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-visible"
+        className="bg-01 dark:bg-09 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 flex-shrink-0">
