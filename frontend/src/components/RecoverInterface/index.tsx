@@ -14,7 +14,7 @@ import { Proof } from 'zokrates-js';
 
 type RecoverInterfaceProps = {
   recoverAddress: string;
-  proof: Proof;
+  proof?: Proof;
 };
 
 export default function RecoverInterface({
@@ -30,15 +30,6 @@ export default function RecoverInterface({
   const { address } = useAccount();
 
   useEffect(() => {
-    if (isRegistering) {
-      const toastId = toast.loading('Transaction in progress...');
-
-      // Close the toast after 5 seconds
-      setTimeout(() => {
-        toast.dismiss(toastId);
-      }, 5000);
-    }
-
     if (isSuccess) {
       const toastId = toast.success('Transaction successful!');
 
@@ -47,7 +38,7 @@ export default function RecoverInterface({
         toast.dismiss(toastId);
       }, 3000);
     }
-  }, [isRegistering, isSuccess]);
+  }, [isSuccess]);
 
   const handleRecover = async () => {
     if (!address || !connectorClient) {
@@ -66,7 +57,7 @@ export default function RecoverInterface({
         callData: safeTransaction.data.data as `0x${string}`,
       };
 
-      if (!proof.proof || !proof.inputs) {
+      if (!proof) {
         throw new Error('Proof or inputs missing');
       }
 
@@ -96,7 +87,7 @@ export default function RecoverInterface({
         New Owner: {address}
       </p>
       <p className="text-07 dark:text-03 md:hidden">
-        New Owner: {getShortAddress(address)}
+        New Owner: {getShortAddress(address || '')}
       </p>
       <button
         onClick={handleRecover}

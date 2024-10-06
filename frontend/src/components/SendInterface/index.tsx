@@ -24,7 +24,7 @@ import { Proof } from 'zokrates-js';
 
 type SendInterfaceProps = {
   recoverAddress: string;
-  proof: Proof;
+  proof?: Proof;
 };
 
 export default function SendInterface({
@@ -44,7 +44,7 @@ export default function SendInterface({
     async function initializeSafeManager() {
       if (walletClient) {
         const manager = new SafeManager();
-        await manager.initializeWallet(address, walletClient);
+        await manager.initializeWallet(address || '', walletClient);
       }
     }
     initializeSafeManager();
@@ -130,7 +130,7 @@ export default function SendInterface({
         callData: '0x',
       };
 
-      if (!proof.proof || !proof.inputs) {
+      if (!proof) {
         throw new Error('Proof or inputs missing');
       }
 
@@ -152,7 +152,6 @@ export default function SendInterface({
       });
     }
   };
-  X;
 
   const isReadyToSend = Boolean(
     address &&
