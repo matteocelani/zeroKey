@@ -126,12 +126,6 @@ export class SafeManager {
     return executeTxResponse as CombinedTransactionResult;
   }
 
-  async waitForTransaction(
-    transactionResponse: ethers.TransactionResponse
-  ): Promise<void> {
-    await transactionResponse.wait();
-  }
-
   async isModuleEnabled(moduleAddress: string): Promise<boolean> {
     if (!this.safeWallet) {
       throw new Error('Safe wallet not initialized');

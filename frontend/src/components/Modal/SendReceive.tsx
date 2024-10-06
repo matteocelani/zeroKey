@@ -29,7 +29,6 @@ interface TransactionResult {
   };
 }
 
-
 export default function SendReceiveModal({
   address,
   onClose,
@@ -149,10 +148,10 @@ export default function SendReceiveModal({
       const recipientAddr = ensAddress || recipientAddress;
       const amountInWei = parseEther(amount);
 
-      const transactionResult = await safeManager.createAndExecuteTransaction(
+      const transactionResult = (await safeManager.createAndExecuteTransaction(
         recipientAddr,
         amountInWei.toString()
-      ) as TransactionResult;
+      )) as TransactionResult;
 
       // Clear the timeout as the transaction was sent
       clearTimeout(timeoutId);
