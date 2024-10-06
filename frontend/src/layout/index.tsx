@@ -7,8 +7,7 @@ import Sidebar from '@/layout/sidebar';
 import Footer from '@/layout/footer';
 import ContentLock from '@/layout/lock';
 // Notifications
-import { Toaster } from "@/components/ui/sonner"
-
+import { Toaster } from '@/components/ui/sonner';
 
 export default function Layout({ children }: PropsWithChildren) {
   const { isConnecting, isConnected, isDisconnected } = useAccount();

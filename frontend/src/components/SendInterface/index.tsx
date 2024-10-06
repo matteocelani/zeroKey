@@ -9,10 +9,8 @@ import { formatBalance } from '@/lib/utils/mathUtils';
 import { CgSpinner } from 'react-icons/cg';
 import { MdDone, MdClose } from 'react-icons/md';
 // Safe Manager
-import { SafeManager, initSafeManager } from '@/lib/utils/safeManager';
-import { parseEther } from 'viem';
+import { SafeManager } from '@/lib/utils/safeManager';
 import { useWalletClient } from 'wagmi';
-
 
 type SendInterfaceProps = {
   address: string;
@@ -27,7 +25,6 @@ export default function SendInterface({
   const [recipientAddress, setRecipientAddress] = useState('');
   const [isValidRecipient, setIsValidRecipient] = useState(false);
   const [isCheckingENS, setIsCheckingENS] = useState(false);
-  const [safeManager, setSafeManager] = useState<SafeManager | null>(null);
   const { data: walletClient } = useWalletClient();
 
   useEffect(() => {
@@ -35,12 +32,10 @@ export default function SendInterface({
       if (walletClient) {
         const manager = new SafeManager();
         await manager.initializeWallet(address, walletClient);
-        setSafeManager(manager);
       }
     }
     initializeSafeManager();
   }, [address, walletClient]);
-  
 
   const { data: balance, isLoading: isLoadingBalance } = useBalance({
     address: address as `0x${string}`,
@@ -116,7 +111,6 @@ export default function SendInterface({
     console.log('Amount:', amount, 'ETH');
     console.log('Proof string:', proofString);
   };
-  
 
   const isReadyToSend = Boolean(
     address &&

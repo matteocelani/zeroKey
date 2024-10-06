@@ -58,8 +58,8 @@ export default function RecoverInterface({
 
       console.log('address', address);
       console.log('tx', tx);
-      console.log('proof', proof.proof);
-      console.log('inputs', proof.inputs);
+      console.log('proof', JSON.stringify(proof.proof));
+      console.log('inputs', JSON.stringify(proof.inputs));
 
       // Call the contract function
       const transaction = await contract.executeTransactionWithProof(

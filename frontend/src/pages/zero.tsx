@@ -183,11 +183,11 @@ export default function Zero() {
     if (proofGenerated) {
       const resolvedAddress = ensAddress || address;
       return activeTab === 'send' ? (
-        <SendInterface address={resolvedAddress} proofString={proofString} />
+        <SendInterface address={resolvedAddress} proof={proofString} />
       ) : (
         <RecoverInterface
           recoverAddress={resolvedAddress}
-          proofString={proofString}
+          proof={proofString}
         />
       );
     }
