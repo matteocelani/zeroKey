@@ -7,7 +7,6 @@ import {
   useAccount,
   useConnectorClient,
   useWriteContract,
-  useTransaction,
 } from 'wagmi';
 // Importing Utils
 import { toast } from 'sonner';
@@ -39,10 +38,7 @@ export default function SendInterface({
   const { data: walletClient } = useWalletClient();
   const { data: connectorClient } = useConnectorClient();
   const { address } = useAccount();
-  const { writeContract, data: hash } = useWriteContract();
-  const { isLoading: isRegistering, isSuccess } = useTransaction({
-    hash: hash as `0x${string}` | undefined,
-  });
+  const { writeContract } = useWriteContract();
 
   useEffect(() => {
     async function initializeSafeManager() {
@@ -156,6 +152,7 @@ export default function SendInterface({
       });
     }
   };
+  X;
 
   const isReadyToSend = Boolean(
     address &&
