@@ -10,6 +10,11 @@ import { isValidAddress } from '@/lib/utils/addressUtils';
 // Importing Icons
 import { CgSpinner } from 'react-icons/cg';
 import { MdDone, MdClose } from 'react-icons/md';
+// Safe Manager
+import { SafeManager, initSafeManager } from '@/lib/utils/safeManager';
+import { parseEther } from 'viem';
+import { useWalletClient } from 'wagmi';
+import { toast } from 'sonner';
 
 type SendReceiveModalProps = {
   address: string;
@@ -29,6 +34,24 @@ export default function SendReceiveModal({
   const [recipientAddress, setRecipientAddress] = useState('');
   const [isValidRecipient, setIsValidRecipient] = useState(false);
   const [isCheckingENS, setIsCheckingENS] = useState(false);
+  const [safeManager, setSafeManager] = useState<SafeManager | null>(null);
+  const { data: walletClient } = useWalletClient();
+  const [transactionError, setTransactionError] = useState<string | null>(null);
+  const [transactionSuccess, setTransactionSuccess] = useState<string | null>(
+    null
+  );
+  const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    async function initializeSafeManager() {
+      if (walletClient) {
+        const manager = new SafeManager();
+        await manager.initializeWallet(address, walletClient);
+        setSafeManager(manager);
+      }
+    }
+    initializeSafeManager();
+  }, [address, walletClient]);
 
   const lowerCaseRecipient = recipientAddress.toLowerCase();
 
@@ -97,12 +120,72 @@ export default function SendReceiveModal({
     }
   };
 
-  const handleSend = () => {
-    console.log('Preparing to send transaction:');
-    console.log('From:', address);
-    console.log('To:', ensAddress || recipientAddress);
-    console.log('Amount:', amount, 'ETH');
-    // Here you would implement the actual send logic
+  const handleSend = async () => {
+    if (!safeManager || !isReadyToSend) return;
+
+    setIsSending(true);
+
+    // Show a pending toast
+    const pendingToastId = toast.loading('Waiting for wallet confirmation...', {
+      className: 'bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md',
+    });
+
+    // Set a timeout to dismiss the pending toast if the transaction is not sent
+    const timeoutId = setTimeout(() => {
+      toast.dismiss(pendingToastId);
+      toast.error('Transaction was not confirmed in time. Please try again.', {
+        className: 'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
+      });
+      setIsSending(false);
+    }, 60000); // 1 minute timeout
+
+    try {
+      const recipientAddr = ensAddress || recipientAddress;
+      const amountInWei = parseEther(amount);
+
+      const transactionResult = await safeManager.createAndExecuteTransaction(
+        recipientAddr,
+        amountInWei.toString()
+      );
+
+      // Clear the timeout as the transaction was sent
+      clearTimeout(timeoutId);
+
+      console.log('Transaction sent. Hash:', transactionResult.hash);
+
+      // Update the pending toast
+      toast.loading('Transaction is being processed...', {
+        id: pendingToastId,
+        className: 'bg-blue-100 text-blue-800 border-l-4 border-blue-500 rounded-md',
+      });
+
+      // Wait for the transaction to be mined
+      await safeManager.waitForTransaction(transactionResult.transactionResponse);
+
+      console.log('Transaction mined. Hash:', transactionResult.hash);
+
+      // Dismiss the pending toast and show a success toast
+      toast.dismiss(pendingToastId);
+      toast.success(
+        `Successfully sent ${amount} ETH to ${recipientAddr}.
+        Transaction hash: ${transactionResult.hash}`,
+        {
+          className: 'bg-green-100 text-green-800 border-l-4 border-green-500 rounded-md',
+        }
+      );
+    } catch (error) {
+      // Clear the timeout as an error occurred
+      clearTimeout(timeoutId);
+
+      console.error('Error sending transaction:', error);
+      toast.dismiss(pendingToastId);
+      toast.error('Failed to send transaction. Please try again.', {
+        className: 'bg-red-100 text-red-800 border-l-4 border-red-500 rounded-md',
+      });
+    } finally {
+      setIsSending(false);
+      onClose(); // Close the modal after the transaction process
+    }
   };
 
   const isReadyToSend = Boolean(
@@ -228,10 +311,10 @@ export default function SendReceiveModal({
               )}
               <button
                 onClick={handleSend}
-                disabled={!isReadyToSend}
-                className="w-full px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                disabled={!isReadyToSend || isSending}
+                className="w-full px-4 py-2 bg-info text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send
+                {isSending ? 'Sending...' : 'Send'}
               </button>
             </>
           ) : (
