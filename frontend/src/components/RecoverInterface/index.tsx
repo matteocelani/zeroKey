@@ -3,15 +3,12 @@ import React from 'react';
 import {
   useAccount,
   useConnectorClient,
-  useReadContract,
   useWriteContract,
   useTransaction,
 } from 'wagmi';
 // Importing Utils
-import { ethers } from 'ethers';
 import { parseEther } from 'viem';
 import { SafeManager } from '@/lib/utils/safeManager';
-import { useEthersSigner } from '@/hooks/useWagmi';
 // Importing Constants
 import { zeroKeyModule } from '@/lib/constants/wagmiContractConfig';
 // Importing Types
@@ -27,6 +24,7 @@ export default function RecoverInterface({
   proof,
 }: RecoverInterfaceProps) {
   const { writeContract, data: hash } = useWriteContract();
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const { isLoading: isRegistering, isSuccess } = useTransaction({
     hash: hash as `0x${string}` | undefined,
   });
