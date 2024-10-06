@@ -1,6 +1,12 @@
 import React from 'react';
 // Importing Hooks
-import { useAccount, useConnectorClient } from 'wagmi';
+import {
+  useAccount,
+  useConnectorClient,
+  useReadContract,
+  useWriteContract,
+  useTransaction,
+} from 'wagmi';
 // Importing Utils
 import { ethers } from 'ethers';
 import { parseEther } from 'viem';
@@ -20,7 +26,10 @@ export default function RecoverInterface({
   recoverAddress,
   proof,
 }: RecoverInterfaceProps) {
-  const ethersSigner = useEthersSigner();
+  const { writeContract, data: hash } = useWriteContract();
+  const { isLoading: isRegistering, isSuccess } = useTransaction({
+    hash: hash as `0x${string}` | undefined,
+  });
 
   const { data: connectorClient } = useConnectorClient();
   const { address } = useAccount();
@@ -44,36 +53,16 @@ export default function RecoverInterface({
         callData: safeTransaction.data.data as `0x${string}`,
       };
 
-      console.log('tx', tx);
-
-      const contract = new ethers.Contract(
-        zeroKeyModule.address,
-        zeroKeyModule.abi,
-        ethersSigner
-      );
-
       if (!proof.proof || !proof.inputs) {
         throw new Error('Proof or inputs missing');
       }
 
-      console.log('address', address);
-      console.log('tx', tx);
-      console.log('proof', JSON.stringify(proof.proof));
-      console.log('inputs', JSON.stringify(proof.inputs));
-
-      // Call the contract function
-      const transaction = await contract.executeTransactionWithProof(
-        address,
-        tx,
-        proof.proof,
-        proof.inputs
-      );
-
-      console.log('Transaction sent:', transaction.hash);
-
-      // Wait for the transaction to be mined
-      const receipt = await transaction.wait();
-      console.log('Transaction confirmed:', receipt);
+      writeContract({
+        ...zeroKeyModule,
+        functionName: 'executeTransactionWithProof',
+        // @ts-expect-error - TS doesn't recognize number as a valid type for args
+        args: [recoverAddress, tx, proof.proof, proof.inputs],
+      });
     } catch (error) {
       console.error(error);
     }
