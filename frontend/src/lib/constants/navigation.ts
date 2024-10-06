@@ -9,7 +9,7 @@ export const navigation = [
     icon: RiDashboardFill,
   },
   {
-    name: 'Zero Send or Recover',
+    name: 'Zero Transactions',
     href: '/zero',
     icon: GoPasskeyFill,
   },
