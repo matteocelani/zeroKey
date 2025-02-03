@@ -41,8 +41,6 @@ Zero Key enhances Safe Wallets with an innovative recovery system, offering both
 - Straightforward process to recover wallet ownership
 - Flexible transactions from other wallets when needed
 
-Certamente, ecco il README aggiornato con le modifiche richieste nella sezione Tech Stack:
-
 ## 💻 Tech Stack
 
 | Category                              | Technology                                                  |
